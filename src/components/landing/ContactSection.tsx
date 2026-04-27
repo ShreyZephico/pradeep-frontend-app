@@ -97,55 +97,43 @@ export default function ContactSection() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
-  // Helper function to encode form data for Netlify
-  const encode = (data: Record<string, string>) => {
-    return Object.keys(data)
-      .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
-      .join("&");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: '' });
     
     try {
-      // Prepare data for Netlify Forms
-      const formDataToSend = {
-        "form-name": "consultation",
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        message: formData.message,
-      };
-
-      // Submit to Netlify Forms
-      const response = await fetch("/", {
+      const formDataToSend = new FormData();
+      formDataToSend.append("form-name", "consultation");
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("message", formData.message);
+      
+      // Submit to our API route (which forwards to Netlify)
+      const response = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: encode(formDataToSend),
+        body: formDataToSend,
       });
-
-      if (response.ok) {
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
         setSubmitStatus({
           type: 'success',
           message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
         });
-        // Reset form
         setFormData({ name: '', email: '', phone: '', message: '' });
       } else {
-        throw new Error('Form submission failed');
+        throw new Error(result.error || 'Form submission failed');
       }
     } catch (error) {
       console.error("Form submission error:", error);
@@ -155,11 +143,7 @@ export default function ContactSection() {
       });
     } finally {
       setIsSubmitting(false);
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => {
-        setSubmitStatus({ type: null, message: '' });
-      }, 5000);
+      setTimeout(() => setSubmitStatus({ type: null, message: '' }), 5000);
     }
   };
 
@@ -173,7 +157,6 @@ export default function ContactSection() {
 
   return (
     <section ref={sectionRef} id="contact" className={styles.section}>
-      {/* Animated Background Elements */}
       <div className={styles.bgElements}>
         <div className={styles.goldParticles} />
         <div className={styles.glowOrb1} />
@@ -285,7 +268,6 @@ export default function ContactSection() {
                 data-netlify-honeypot="bot-field"
                 noValidate
               >
-                {/* Hidden input required for Netlify Forms */}
                 <input type="hidden" name="form-name" value="consultation" />
                 
                 <div className={styles.formRow}>
@@ -346,7 +328,7 @@ export default function ContactSection() {
                   {errors.message && <span className={styles.errorMessage}>{errors.message}</span>}
                 </div>
                 
-                {/* Honeypot field for spam protection - hidden from users */}
+                {/* Honeypot field for spam protection */}
                 <div style={{ position: 'absolute', left: '-5000px', top: '-5000px' }}>
                   <input 
                     type="text" 
@@ -383,7 +365,6 @@ export default function ContactSection() {
               </div>
               <p className={styles.mapAddress}>{contactData.contact.studio}</p>
               
-              {/* Embedded Google Map */}
               <div className={styles.mapContainer}>
                 <iframe
                   src="https://maps.google.com/maps?q=22.695814,72.858726&z=15&output=embed"
