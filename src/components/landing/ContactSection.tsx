@@ -105,10 +105,8 @@ export default function ContactSection() {
     }
   };
 
-  const encode = (data: Record<string, string>) => {
-    return Object.keys(data)
-      .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
-      .join("&");
+  const onRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,7 +129,7 @@ export default function ContactSection() {
     setSubmitStatus({ type: null, message: '' });
     
     try {
-      // First verify reCAPTCHA with your backend
+      // 1. Verify reCAPTCHA
       const verifyResponse = await fetch("/api/verify-recaptcha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,20 +142,17 @@ export default function ContactSection() {
         throw new Error("reCAPTCHA verification failed. Please try again.");
       }
       
-      // Prepare data for Netlify Forms
-      const formDataToSend = {
-        "form-name": "consultation",
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        message: formData.message,
-      };
-
-      // Submit to Netlify Forms
+      // 2. Submit to Netlify using FormData (THIS IS THE FIX)
+      const netlifyFormData = new FormData();
+      netlifyFormData.append("form-name", "consultation");
+      netlifyFormData.append("name", formData.name);
+      netlifyFormData.append("email", formData.email);
+      netlifyFormData.append("phone", formData.phone);
+      netlifyFormData.append("message", formData.message);
+      
       const response = await fetch("/", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: encode(formDataToSend),
+        body: netlifyFormData,
       });
 
       if (response.ok) {
@@ -171,6 +166,8 @@ export default function ContactSection() {
         recaptchaRef.current?.reset();
         setRecaptchaToken(null);
       } else {
+        const errorText = await response.text();
+        console.error("Netlify submission error:", errorText);
         throw new Error('Form submission failed');
       }
     } catch (error) {
@@ -189,10 +186,6 @@ export default function ContactSection() {
         setSubmitStatus({ type: null, message: '' });
       }, 5000);
     }
-  };
-
-  const onRecaptchaChange = (token: string | null) => {
-    setRecaptchaToken(token);
   };
 
   const contactInfo: ContactInfo[] = [
