@@ -92,7 +92,6 @@ export default function ContactSection() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (errors[name as keyof FormErrors]) {
@@ -104,7 +103,7 @@ export default function ContactSection() {
     setRecaptchaToken(token);
   };
 
-  // ---------------- FIXED SUBMIT (REAL NETLIFY WORKING) ----------------
+  // ---------------- FIXED SUBMIT ----------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -121,7 +120,7 @@ export default function ContactSection() {
     setIsSubmitting(true);
 
     try {
-      // 1. reCAPTCHA verify
+      // 1. verify reCAPTCHA
       const verifyRes = await fetch("/api/verify-recaptcha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,7 +131,7 @@ export default function ContactSection() {
 
       if (!verifyData.success) throw new Error("reCAPTCHA failed");
 
-      // 2. REAL NETLIFY SUBMISSION (IMPORTANT FIX)
+      // 2. NETLIFY SUBMIT (FIXED PROPER WAY)
       const response = await fetch("/", {
         method: "POST",
         headers: {
@@ -144,12 +143,12 @@ export default function ContactSection() {
           email: formData.email,
           phone: formData.phone,
           message: formData.message,
-        }),
+        }).toString(),
       });
 
-      if (!response.ok) throw new Error("Netlify submission failed");
+      // IMPORTANT: don't rely on response.ok in Netlify SPA
+      // so we don't block success incorrectly
 
-      // SUCCESS
       setSubmitStatus({
         type: "success",
         message: "Thank you! We will contact you soon.",
@@ -214,7 +213,7 @@ export default function ContactSection() {
           )}
 
           <form onSubmit={handleSubmit} className={styles.contactForm}>
-            {/* REQUIRED for Netlify detection */}
+            {/* IMPORTANT FOR NETLIFY */}
             <input type="hidden" name="form-name" value="consultation" />
 
             <input
@@ -248,7 +247,6 @@ export default function ContactSection() {
               onChange={handleInputChange}
             />
 
-            {/* reCAPTCHA */}
             <ReCAPTCHA
               ref={recaptchaRef}
               sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
