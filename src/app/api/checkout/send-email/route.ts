@@ -1,19 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-// Configure email transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER, // Your email address
-    pass: process.env.EMAIL_PASS, // Your email password or app-specific password
-  },
-});
+function getMissingEmailEnv() {
+  const required = ['EMAIL_USER', 'EMAIL_PASS'] as const;
+  const missing = required.filter((key) => !process.env[key]);
+  return missing;
+}
+
+function createTransporter() {
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465, // true for 465, false for other ports
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const missingEnv = getMissingEmailEnv();
+    if (missingEnv.length > 0) {
+      console.error('❌ Missing required email env vars:', missingEnv.join(', '));
+      return NextResponse.json(
+        { error: `Server email is not configured (${missingEnv.join(', ')})` },
+        { status: 500 }
+      );
+    }
+
+    const transporter = createTransporter();
     const body = await request.json();
     const { name, email, phone, message, subject } = body;
 
@@ -143,7 +163,7 @@ export async function POST(request: NextRequest) {
       `,
     };
 
-    // Send email
+    // Send email (business notification)
     await transporter.sendMail(mailOptions);
 
     // Optional: Send auto-reply to customer
@@ -224,9 +244,12 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Email sending error:', error);
     return NextResponse.json(
-      { error: 'Failed to send email' },
+      {
+        error: process.env.NODE_ENV === 'production' ? 'Failed to send email' : `Failed to send email: ${message}`,
+      },
       { status: 500 }
     );
   }
