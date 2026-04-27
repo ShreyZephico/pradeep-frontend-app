@@ -1,0 +1,1187 @@
+/* ContactSection.module.css */
+
+.section {
+  position: relative;
+  padding: 100px 0;
+  background: linear-gradient(135deg, #FDF8F0 0%, #FFFFFF 40%, #F9F6EE 100%);
+  overflow: hidden;
+}
+
+/* Animated Background Elements */
+.bgElements {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.goldParticles {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 15% 30%, rgba(212, 175, 55, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at 85% 55%, rgba(212, 175, 55, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 45% 85%, rgba(232, 180, 184, 0.05) 1px, transparent 1px);
+  background-size: 60px 60px, 80px 80px, 100px 100px;
+  animation: floatParticles 20s ease-in-out infinite;
+}
+
+@keyframes floatParticles {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  33% {
+    transform: translateY(-15px);
+  }
+
+  66% {
+    transform: translateY(8px);
+  }
+}
+
+.glowOrb1 {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08), transparent 70%);
+  border-radius: 50%;
+  animation: floatOrb1 20s ease-in-out infinite;
+}
+
+.glowOrb2 {
+  position: absolute;
+  bottom: -20%;
+  left: -10%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(232, 180, 184, 0.06), transparent 70%);
+  border-radius: 50%;
+  animation: floatOrb2 25s ease-in-out infinite;
+}
+
+@keyframes floatOrb1 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(40px, -30px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+@keyframes floatOrb2 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(-35px, 40px) scale(1.05);
+  }
+
+  66% {
+    transform: translate(25px, -25px) scale(0.98);
+  }
+}
+
+.diamondDust {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.03) 2px, transparent 2px);
+  background-size: 40px 40px;
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.container {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 48px;
+  z-index: 2;
+}
+
+/* Header Styles */
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+.header.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eyebrowWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.eyebrowLine {
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #D4AF37, #D4AF37, transparent);
+}
+
+.eyebrow {
+  color: #D4AF37;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+.title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  color: #0A2B2E;
+  margin-bottom: 16px;
+  line-height: 1.2;
+  font-family: 'Georgia', 'Times New Roman', 'Cormorant Garamond', serif;
+}
+
+.goldText {
+  color: #D4AF37;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #2C2C2C;
+  margin-bottom: 28px;
+  opacity: 0.7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+.headerAccent {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, #D4AF37, #E8B4B8);
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 40px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1) 0.2s;
+}
+
+.grid.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Left Column */
+.infoColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.brandCard {
+  background: linear-gradient(135deg, #0A2B2E 0%, #0D3639 100%);
+  padding: 32px;
+  border-radius: 24px;
+  color: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+}
+
+.brandCard::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.1), transparent);
+  border-radius: 50%;
+}
+
+.brandName {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-family: 'Georgia', 'Times New Roman', 'Cormorant Garamond', serif;
+}
+
+.sinceTag {
+  display: block;
+  font-size: 0.8rem;
+  color: #D4AF37;
+  margin-top: 5px;
+  font-weight: normal;
+}
+
+.brandDescription {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  opacity: 0.9;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+.contactCard {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+}
+
+.cardIcon {
+  font-size: 1.5rem;
+}
+
+.cardHeader h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0A2B2E;
+  margin: 0;
+  font-family: 'Georgia', 'Times New Roman', 'Cormorant Garamond', serif;
+}
+
+.contactList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.contactItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  opacity: 0;
+  animation: slideInLeft 0.5s ease-out forwards;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.contactIcon {
+  font-size: 1.2rem;
+  min-width: 32px;
+}
+
+.contactDetail {
+  flex: 1;
+}
+
+.contactLabel {
+  display: block;
+  font-size: 0.7rem;
+  color: #D4AF37;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+.contactValue {
+  font-size: 0.9rem;
+  color: #0A2B2E;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+.contactValue:hover {
+  color: #D4AF37;
+}
+
+.appointmentNote {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(212, 175, 55, 0.08);
+  border-radius: 16px;
+  margin-top: 8px;
+}
+
+.noteIcon {
+  font-size: 1.2rem;
+}
+
+.appointmentNote strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #0A2B2E;
+  margin-bottom: 4px;
+}
+
+.appointmentNote p {
+  font-size: 0.75rem;
+  color: #2C2C2C;
+  margin: 0;
+}
+
+.socialCard {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 24px 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.socialCard h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0A2B2E;
+  margin-bottom: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 16px;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(212, 175, 55, 0.1);
+  border-radius: 50px;
+  text-decoration: none;
+  color: #0A2B2E;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.socialLink:hover {
+  background: #D4AF37;
+  transform: translateY(-2px);
+}
+
+/* Right Column */
+.formColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.formCard {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.formHeader {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.formHeader h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #0A2B2E;
+  margin-bottom: 8px;
+  font-family: 'Georgia', 'Times New Roman', 'Cormorant Garamond', serif;
+}
+
+.formHeader p {
+  font-size: 0.85rem;
+  color: #2C2C2C;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.contactForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.formGroup {
+  position: relative;
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E2DFD7;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background: transparent;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+.formGroup label {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  color: #999;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  background: #FFFFFF;
+  padding: 0 4px;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  border-color: #D4AF37;
+}
+
+.formGroup input:focus~label,
+.formGroup input:not(:placeholder-shown)~label,
+.formGroup textarea:focus~label,
+.formGroup textarea:not(:placeholder-shown)~label {
+  top: -10px;
+  left: 12px;
+  font-size: 0.7rem;
+  color: #D4AF37;
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #D4AF37 0%, #C5A336 100%);
+  color: #0A2B2E;
+  border: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.submitButton:hover {
+  transform: translateY(-2px);
+  gap: 16px;
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+}
+
+.mapCard {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.mapHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.mapPinIcon {
+  font-size: 1.3rem;
+}
+
+.mapHeader h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0A2B2E;
+  margin: 0;
+}
+
+.mapAddress {
+  font-size: 0.85rem;
+  color: #2C2C2C;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.mapPlaceholder {
+  position: relative;
+  height: 200px;
+  background: linear-gradient(135deg, #0A2B2E 0%, #0D3639 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.mapOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(10, 43, 46, 0.9);
+}
+
+.mapMarker {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.markerDot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: #D4AF37;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.markerPulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: rgba(212, 175, 55, 0.4);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.mapText {
+  color: #D4AF37;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.mapLink {
+  color: #FFFFFF;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.mapLink:hover {
+  color: #D4AF37;
+}
+
+.businessHours {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.hoursRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.hoursRow span {
+  color: #2C2C2C;
+}
+
+.hoursRow strong {
+  color: #0A2B2E;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .infoColumn {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .formColumn {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 0;
+  }
+
+  .container {
+    padding: 0 24px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .socialLinks {
+    flex-wrap: wrap;
+  }
+
+  .eyebrowLine {
+    width: 30px;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+  }
+
+  .title {
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 50px 0;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .brandCard,
+  .contactCard,
+  .formCard,
+  .mapCard,
+  .socialCard {
+    padding: 24px;
+  }
+
+  .contactItem {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .contactIcon {
+    font-size: 1rem;
+  }
+
+  .submitButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .glowOrb1,
+  .glowOrb2 {
+    display: none;
+  }
+}
+
+/* Status Messages */
+.statusMessage {
+  padding: 14px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statusMessage.success {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid #4CAF50;
+  color: #4CAF50;
+}
+
+.statusMessage.error {
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid #f44336;
+  color: #f44336;
+}
+
+/* Form Error Styles */
+.formGroup input.error,
+.formGroup textarea.error {
+  border-color: #f44336;
+}
+
+.errorMessage {
+  position: absolute;
+  bottom: -20px;
+  left: 12px;
+  font-size: 0.7rem;
+  color: #f44336;
+}
+
+/* Spinner Animation */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #0A2B2E;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disabled Button State */
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Google Map Container */
+.mapContainer {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.googleMap {
+  width: 100%;
+  height: 100%;
+  border: none;
+  transition: transform 0.3s ease;
+}
+
+.googleMap:hover {
+  transform: scale(1.02);
+}
+
+/* Map Card Styles */
+.mapCard {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.mapHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.mapPinIcon {
+  font-size: 1.3rem;
+}
+
+.mapHeader h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0A2B2E;
+  margin: 0;
+  font-family: 'Georgia', 'Times New Roman', 'Cormorant Garamond', serif;
+}
+
+.mapAddress {
+  font-size: 0.85rem;
+  color: #2C2C2C;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+/* Directions Button */
+.mapDirections {
+  margin-bottom: 24px;
+}
+
+.directionsButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #D4AF37 0%, #C5A336 100%);
+  color: #0A2B2E;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+.directionsButton:hover {
+  transform: translateY(-2px);
+  gap: 14px;
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+}
+
+.directionsButton svg {
+  transition: transform 0.3s ease;
+}
+
+.directionsButton:hover svg {
+  transform: translateX(4px);
+}
+
+/* Business Hours Section */
+.businessHours {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.hoursTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0A2B2E;
+  margin-bottom: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.hoursRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 8px 0;
+}
+
+.hoursRow span {
+  color: #2C2C2C;
+  font-weight: 500;
+}
+
+.hoursRow strong {
+  color: #0A2B2E;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+/* Responsive Map */
+@media (max-width: 768px) {
+  .mapContainer {
+    height: 240px;
+  }
+
+  .mapCard {
+    padding: 24px;
+  }
+
+  .directionsButton {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+
+  .hoursRow {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .mapContainer {
+    height: 220px;
+  }
+
+  .mapCard {
+    padding: 20px;
+  }
+
+  .mapAddress {
+    font-size: 0.8rem;
+  }
+
+  .hoursRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+/* Form Input Text Color Fix */
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E2DFD7;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background: #FFFFFF;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+  color: #000000 !important;
+  /* Force black text color */
+  font-weight: 500;
+}
+
+/* For placeholder text color */
+.formGroup input::placeholder,
+.formGroup textarea::placeholder {
+  color: #999999;
+  opacity: 1;
+}
+
+/* For actual typed text */
+.formGroup input,
+.formGroup textarea {
+  color: #000000;
+}
+
+/* For autofill styles */
+.formGroup input:-webkit-autofill,
+.formGroup input:-webkit-autofill:hover,
+.formGroup input:-webkit-autofill:focus,
+.formGroup textarea:-webkit-autofill,
+.formGroup textarea:-webkit-autofill:hover,
+.formGroup textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: #000000;
+  -webkit-box-shadow: 0 0 0px 1000px #FFFFFF inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Label stays dark */
+.formGroup label {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  color: #666666;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  background: #FFFFFF;
+  padding: 0 4px;
+  font-weight: 500;
+}
+
+/* Focus and filled state for label */
+.formGroup input:focus~label,
+.formGroup input:not(:placeholder-shown)~label,
+.formGroup textarea:focus~label,
+.formGroup textarea:not(:placeholder-shown)~label {
+  top: -10px;
+  left: 12px;
+  font-size: 0.7rem;
+  color: #D4AF37;
+  font-weight: 600;
+}
+
+/* Focus state for inputs */
+.formGroup input:focus,
+.formGroup textarea:focus {
+  border-color: #D4AF37;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+/* Error state */
+.formGroup input.error,
+.formGroup textarea.error {
+  border-color: #f44336;
+}
+
+.formGroup input.error:focus,
+.formGroup textarea.error:focus {
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+}
+
+/* Success state for inputs */
+.formGroup input.valid,
+.formGroup textarea.valid {
+  border-color: #4CAF50;
+}
+
+/* Error message styling */
+.errorMessage {
+  position: absolute;
+  bottom: -20px;
+  left: 12px;
+  font-size: 0.7rem;
+  color: #f44336;
+  font-weight: 500;
+}
+
+/* Status Messages */
+.statusMessage {
+  padding: 14px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statusMessage.success {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid #4CAF50;
+  color: #2e7d32;
+}
+
+.statusMessage.error {
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid #f44336;
+  color: #c62828;
+}
+
+/* Spinner Animation */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #0A2B2E;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disabled Button State */
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* For select dropdowns if any */
+.formGroup select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E2DFD7;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  background: #FFFFFF;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif;
+}
+
+/* Ensure textarea text is black */
+.formGroup textarea {
+  color: #000000;
+  resize: vertical;
+}
+
+/* For better visibility on mobile */
+@media (max-width: 768px) {
+
+  .formGroup input,
+  .formGroup textarea {
+    font-size: 16px;
+    /* Prevents zoom on mobile */
+  }
+}
