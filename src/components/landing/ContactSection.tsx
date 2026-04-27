@@ -103,6 +103,13 @@ export default function ContactSection() {
     }
   };
 
+  // Helper function to encode form data for Netlify
+  const encode = (data: Record<string, string>) => {
+    return Object.keys(data)
+      .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+      .join("&");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -114,19 +121,22 @@ export default function ContactSection() {
     setSubmitStatus({ type: null, message: '' });
     
     try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          subject: `New Consultation Request from ${formData.name}`,
-        }),
+      // Prepare data for Netlify Forms
+      const formDataToSend = {
+        "form-name": "consultation",
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+      };
+
+      // Submit to Netlify Forms
+      const response = await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encode(formDataToSend),
       });
-      
-      const data = await response.json();
-      
+
       if (response.ok) {
         setSubmitStatus({
           type: 'success',
@@ -135,9 +145,10 @@ export default function ContactSection() {
         // Reset form
         setFormData({ name: '', email: '', phone: '', message: '' });
       } else {
-        throw new Error(data.error || 'Failed to send message');
+        throw new Error('Form submission failed');
       }
     } catch (error) {
+      console.error("Form submission error:", error);
       setSubmitStatus({
         type: 'error',
         message: 'Something went wrong. Please try again or call us directly.'
@@ -159,12 +170,6 @@ export default function ContactSection() {
     { label: "Studio", value: contactData.contact.studio, icon: "📍" },
     { label: "Hours", value: contactData.contact.hours, icon: "🕐" },
   ];
-
-  // Google Maps Embed URL
-  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d117928.00000000001!2d72.758726!3d22.695814!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e50c5f4a3a3a3%3A0x0!2zMjLCsDQxJzQ0LjkiTiA3MsKwNTEnMzEuNCJF!5e0!3m2!1sen!2sin!4v1234567890!5m2!1sen!2sin";
-  
-  // Alternative: Use your exact coordinates
-  const mapEmbedUrlSimple = `https://maps.google.com/maps?q=22.695814,72.858726&z=15&output=embed`;
 
   return (
     <section ref={sectionRef} id="contact" className={styles.section}>
@@ -271,7 +276,19 @@ export default function ContactSection() {
                 </div>
               )}
               
-              <form onSubmit={handleSubmit} className={styles.contactForm} noValidate>
+              <form 
+                onSubmit={handleSubmit} 
+                className={styles.contactForm}
+                name="consultation"
+                method="POST"
+                data-netlify="true"
+                data-netlify-honeypot="bot-field"
+                data-netlify-recaptcha="true"
+                noValidate
+              >
+                {/* Hidden input required for Netlify Forms */}
+                <input type="hidden" name="form-name" value="consultation" />
+                
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
                     <input
@@ -328,6 +345,20 @@ export default function ContactSection() {
                   />
                   <label>Tell us about your requirements *</label>
                   {errors.message && <span className={styles.errorMessage}>{errors.message}</span>}
+                </div>
+                
+                {/* reCAPTCHA "I am not a robot" - Netlify will automatically inject this */}
+                <div data-netlify-recaptcha="true" className={styles.recaptchaWrapper}></div>
+                
+                {/* Honeypot field for spam protection - hidden from users */}
+                <div style={{ position: 'absolute', left: '-5000px', top: '-5000px' }}>
+                  <input 
+                    type="text" 
+                    name="bot-field" 
+                    tabIndex={-1}
+                    autoComplete="off"
+                    onChange={() => {}} 
+                  />
                 </div>
                 
                 <button 

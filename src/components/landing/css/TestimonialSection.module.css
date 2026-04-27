@@ -1,6 +1,6 @@
 .section {
   padding: 36px 0;
-  background: #ffffff;
+  background: var(--color-pure-white);
 }
 
 .container {
@@ -15,7 +15,7 @@
 
 .eyebrow {
   margin: 0 0 12px;
-  color: #d4af37;
+  color: var(--color-soft-gold);
   font-size: 0.84rem;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -24,7 +24,7 @@
 
 .title {
   margin: 0;
-  color: #0a2b2e;
+  color: var(--color-deep-teal);
   font-size: clamp(2rem, 3vw, 3rem);
 }
 
@@ -37,18 +37,18 @@
 .card {
   padding: 24px;
   border-radius: 28px;
-  background: linear-gradient(180deg, #fdf8f0, #ffffff);
-  border: 1px solid #e2dfd7;
+  background: linear-gradient(180deg, var(--color-warm-ivory), var(--color-pure-white));
+  border: 1px solid var(--color-soft-grey);
 }
 
 .stars {
-  color: #d4af37;
+  color: var(--color-soft-gold);
   letter-spacing: 0.18em;
 }
 
 .quote {
   margin: 16px 0 0;
-  color: #2c2c2c;
+  color: var(--color-charcoal);
   line-height: 1.9;
 }
 
@@ -58,13 +58,13 @@
 
 .author strong {
   display: block;
-  color: #0a2b2e;
+  color: var(--color-deep-teal);
 }
 
 .author span {
   display: block;
   margin-top: 6px;
-  color: #2c2c2c;
+  color: var(--color-charcoal);
 }
 
 @media (max-width: 920px) {
@@ -78,3 +78,6 @@
     width: min(100% - 24px, 1180px);
   }
 }
+
+
+
