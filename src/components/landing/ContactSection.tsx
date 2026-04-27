@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
 import styles from "./css/ContactSection.module.css";
 
 // Import contact data
@@ -44,9 +43,7 @@ export default function ContactSection() {
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -105,23 +102,10 @@ export default function ContactSection() {
     }
   };
 
-  const onRecaptchaChange = (token: string | null) => {
-    setRecaptchaToken(token);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!validateForm()) {
-      return;
-    }
-    
-    // Check if reCAPTCHA is completed
-    if (!recaptchaToken) {
-      setSubmitStatus({
-        type: 'error',
-        message: 'Please verify that you are not a robot.'
-      });
       return;
     }
     
@@ -129,30 +113,16 @@ export default function ContactSection() {
     setSubmitStatus({ type: null, message: '' });
     
     try {
-      // 1. Verify reCAPTCHA
-      const verifyResponse = await fetch("/api/verify-recaptcha", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: recaptchaToken }),
-      });
-      
-      const verification = await verifyResponse.json();
-      
-      if (!verification.success) {
-        throw new Error("reCAPTCHA verification failed. Please try again.");
-      }
-      
-      // 2. Submit to Netlify using FormData (THIS IS THE FIX)
-      const netlifyFormData = new FormData();
-      netlifyFormData.append("form-name", "consultation");
-      netlifyFormData.append("name", formData.name);
-      netlifyFormData.append("email", formData.email);
-      netlifyFormData.append("phone", formData.phone);
-      netlifyFormData.append("message", formData.message);
+      const formDataObj = new FormData();
+      formDataObj.append("form-name", "consultation");
+      formDataObj.append("name", formData.name);
+      formDataObj.append("email", formData.email);
+      formDataObj.append("phone", formData.phone);
+      formDataObj.append("message", formData.message);
       
       const response = await fetch("/", {
         method: "POST",
-        body: netlifyFormData,
+        body: formDataObj,
       });
 
       if (response.ok) {
@@ -160,25 +130,16 @@ export default function ContactSection() {
           type: 'success',
           message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
         });
-        // Reset form
         setFormData({ name: '', email: '', phone: '', message: '' });
-        // Reset reCAPTCHA
-        recaptchaRef.current?.reset();
-        setRecaptchaToken(null);
       } else {
-        const errorText = await response.text();
-        console.error("Netlify submission error:", errorText);
         throw new Error('Form submission failed');
       }
     } catch (error) {
       console.error("Form submission error:", error);
       setSubmitStatus({
         type: 'error',
-        message: error instanceof Error ? error.message : 'Something went wrong. Please try again or call us directly.'
+        message: 'Something went wrong. Please try again or call us directly.'
       });
-      // Reset reCAPTCHA on error
-      recaptchaRef.current?.reset();
-      setRecaptchaToken(null);
     } finally {
       setIsSubmitting(false);
       
@@ -365,15 +326,6 @@ export default function ContactSection() {
                   />
                   <label>Tell us about your requirements *</label>
                   {errors.message && <span className={styles.errorMessage}>{errors.message}</span>}
-                </div>
-                
-                {/* Google reCAPTCHA */}
-                <div className={styles.recaptchaWrapper}>
-                  <ReCAPTCHA
-                    ref={recaptchaRef}
-                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                    onChange={onRecaptchaChange}
-                  />
                 </div>
                 
                 <div style={{ position: 'absolute', left: '-5000px', top: '-5000px' }}>
