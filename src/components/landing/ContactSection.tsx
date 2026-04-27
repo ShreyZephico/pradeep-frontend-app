@@ -44,9 +44,8 @@ export default function ContactSection() {
   
   const [errors, setErrors] = useState<FormErrors>({});
   const sectionRef = useRef<HTMLElement>(null);
-  const formRef = useRef<HTMLFormElement>(null); // Add ref for form
+  const formRef = useRef<HTMLFormElement>(null);
 
-  // Force debug logging on component mount
   useEffect(() => {
     console.log("🚀 ContactSection MOUNTED - Component loaded successfully");
     
@@ -131,6 +130,7 @@ export default function ContactSection() {
     }
   };
 
+  // ✅ FIXED: Submit DIRECTLY to Netlify, NOT through API route
   const handleSubmit = async (e: React.FormEvent) => {
     console.log("🎯🎯🎯 SUBMIT BUTTON CLICKED! 🎯🎯🎯");
     e.preventDefault();
@@ -150,15 +150,17 @@ export default function ContactSection() {
     setSubmitStatus({ type: null, message: '' });
     
     try {
-      console.log("📦 Creating FormData object");
-      const formDataToSend = new FormData();
+      console.log("📦 Creating URLSearchParams for direct Netlify submission");
+      
+      // ✅ CRITICAL FIX: Use URLSearchParams (NOT FormData) for direct Netlify submission
+      const formDataToSend = new URLSearchParams();
       formDataToSend.append("form-name", "consultation");
       formDataToSend.append("name", formData.name);
       formDataToSend.append("email", formData.email);
       formDataToSend.append("phone", formData.phone);
       formDataToSend.append("message", formData.message);
       
-      console.log("✅ FormData created with fields:", {
+      console.log("✅ Data prepared for Netlify:", {
         "form-name": "consultation",
         name: formData.name,
         email: formData.email,
@@ -177,10 +179,14 @@ export default function ContactSection() {
         console.log("⚠️ Bot-field input NOT found in DOM");
       }
       
-      console.log("📤 Sending POST request to /api/contact...");
-      const response = await fetch("/api/contact", {
+      // ✅ CRITICAL FIX: Submit DIRECTLY to Netlify (root URL), NOT to /api/contact
+      console.log("📤 Sending DIRECT POST request to Netlify (/)...");
+      const response = await fetch("/", {
         method: "POST",
-        body: formDataToSend,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formDataToSend.toString(),
       });
       
       console.log("📥 Response received:", {
@@ -189,11 +195,10 @@ export default function ContactSection() {
         ok: response.ok
       });
       
-      const result = await response.json();
-      console.log("📄 Response body:", result);
-      
-      if (response.ok && result.success) {
-        console.log("🎉🎉🎉 SUCCESS! Form submitted to Netlify! 🎉🎉🎉");
+      // ✅ Netlify returns 200 OK with HTML page on success
+      if (response.ok) {
+        console.log("🎉🎉🎉 SUCCESS! Form submitted DIRECTLY to Netlify! 🎉🎉🎉");
+        console.log("✅ Check your Netlify dashboard in 30-60 seconds");
         setSubmitStatus({
           type: 'success',
           message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
@@ -201,8 +206,8 @@ export default function ContactSection() {
         setFormData({ name: '', email: '', phone: '', message: '' });
         console.log("Form reset after successful submission");
       } else {
-        console.error("❌ Server returned error:", result);
-        throw new Error(result.error || 'Form submission failed');
+        console.error("❌ Netlify returned error:", response.status);
+        throw new Error('Form submission failed');
       }
     } catch (error) {
       console.error("❌❌❌ CATCH BLOCK - Submission failed:", error);
@@ -220,18 +225,6 @@ export default function ContactSection() {
     }
   };
 
-  // Test function to check if form is working
-  const testSubmit = () => {
-    console.log("🧪 TEST: Manual test submit triggered");
-    if (formRef.current) {
-      console.log("Form ref found, submitting...");
-      const event = new Event('submit', { bubbles: true, cancelable: true });
-      formRef.current.dispatchEvent(event);
-    } else {
-      console.error("Form ref not found!");
-    }
-  };
-
   const contactInfo: ContactInfo[] = [
     { label: "Phone", value: contactData.contact.phone, icon: "📞", link: `tel:${contactData.contact.phone}` },
     { label: "Email", value: contactData.contact.email, icon: "✉️", link: `mailto:${contactData.contact.email}` },
@@ -241,280 +234,257 @@ export default function ContactSection() {
   ];
 
   return (
-    <>
-      {/* TEST BUTTON - Visible only in development */}
-      {process.env.NODE_ENV !== 'production' && (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '20px',
-          zIndex: 9999,
-          backgroundColor: '#ff4444',
-          padding: '10px 20px',
-          borderRadius: '8px',
-          color: 'white',
-          fontFamily: 'monospace',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
-        }} onClick={testSubmit}>
-          🧪 TEST FORM SUBMIT
-        </div>
-      )}
+    <section ref={sectionRef} id="contact" className={styles.section}>
+      <div className={styles.bgElements}>
+        <div className={styles.goldParticles} />
+        <div className={styles.glowOrb1} />
+        <div className={styles.glowOrb2} />
+        <div className={styles.diamondDust} />
+      </div>
 
-      <section ref={sectionRef} id="contact" className={styles.section}>
-        <div className={styles.bgElements}>
-          <div className={styles.goldParticles} />
-          <div className={styles.glowOrb1} />
-          <div className={styles.glowOrb2} />
-          <div className={styles.diamondDust} />
+      <div className={styles.container}>
+        <div className={`${styles.header} ${isVisible ? styles.visible : ""}`}>
+          <div className={styles.eyebrowWrapper}>
+            <span className={styles.eyebrowLine}></span>
+            <p className={styles.eyebrow}>Connect With Us</p>
+            <span className={styles.eyebrowLine}></span>
+          </div>
+          <h2 className={styles.title}>
+            Let's Begin Your 
+            <span className={styles.goldText}> Luxury Journey</span>
+          </h2>
+          <p className={styles.subtitle}>
+            Experience personalized service and expert guidance for your special moments
+          </p>
+          <div className={styles.headerAccent} />
         </div>
 
-        <div className={styles.container}>
-          <div className={`${styles.header} ${isVisible ? styles.visible : ""}`}>
-            <div className={styles.eyebrowWrapper}>
-              <span className={styles.eyebrowLine}></span>
-              <p className={styles.eyebrow}>Connect With Us</p>
-              <span className={styles.eyebrowLine}></span>
+        <div className={`${styles.grid} ${isVisible ? styles.visible : ""}`}>
+          {/* Left Column - Contact Info */}
+          <div className={styles.infoColumn}>
+            <div className={styles.brandCard}>
+              <h3 className={styles.brandName}>
+                {contactData.brand.name}
+                <span className={styles.sinceTag}>{contactData.brand.tagline}</span>
+              </h3>
+              <p className={styles.brandDescription}>{contactData.brand.description}</p>
             </div>
-            <h2 className={styles.title}>
-              Let's Begin Your 
-              <span className={styles.goldText}> Luxury Journey</span>
-            </h2>
-            <p className={styles.subtitle}>
-              Experience personalized service and expert guidance for your special moments
-            </p>
-            <div className={styles.headerAccent} />
+
+            <div className={styles.contactCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardIcon}>💎</div>
+                <h4>Get in Touch</h4>
+              </div>
+              
+              <div className={styles.contactList}>
+                {contactInfo.map((item, index) => (
+                  <div 
+                    key={item.label} 
+                    className={styles.contactItem}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className={styles.contactIcon}>{item.icon}</div>
+                    <div className={styles.contactDetail}>
+                      <span className={styles.contactLabel}>{item.label}</span>
+                      {item.link ? (
+                        <a href={item.link} className={styles.contactValue}>
+                          {item.value}
+                        </a>
+                      ) : (
+                        <strong className={styles.contactValue}>{item.value}</strong>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className={styles.appointmentNote}>
+                <div className={styles.noteIcon}>📅</div>
+                <div>
+                  <strong>Private Consultations Available</strong>
+                  <p>{contactData.appointment.notice}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.socialCard}>
+              <h4>Follow Our Journey</h4>
+              <div className={styles.socialLinks}>
+                <a href={contactData.social.instagram} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
+                  <span>📷</span> Instagram
+                </a>
+                <a href={contactData.social.facebook} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
+                  <span>📘</span> Facebook
+                </a>
+                <a href={contactData.social.youtube} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
+                  <span>▶️</span> YouTube
+                </a>
+              </div>
+            </div>
           </div>
 
-          <div className={`${styles.grid} ${isVisible ? styles.visible : ""}`}>
-            {/* Left Column - Contact Info */}
-            <div className={styles.infoColumn}>
-              <div className={styles.brandCard}>
-                <h3 className={styles.brandName}>
-                  {contactData.brand.name}
-                  <span className={styles.sinceTag}>{contactData.brand.tagline}</span>
-                </h3>
-                <p className={styles.brandDescription}>{contactData.brand.description}</p>
+          {/* Right Column - Contact Form & Map */}
+          <div className={styles.formColumn}>
+            <div className={styles.formCard}>
+              <div className={styles.formHeader}>
+                <h3>Schedule a Consultation</h3>
+                <p>Fill out the form and our experts will reach out within 24 hours</p>
               </div>
-
-              <div className={styles.contactCard}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIcon}>💎</div>
-                  <h4>Get in Touch</h4>
+              
+              {submitStatus.type && (
+                <div className={`${styles.statusMessage} ${styles[submitStatus.type]}`}>
+                  {submitStatus.message}
                 </div>
+              )}
+              
+              <form 
+                ref={formRef}
+                onSubmit={handleSubmit} 
+                className={styles.contactForm}
+                name="consultation"
+                method="POST"
+                data-netlify="true"
+                data-netlify-honeypot="bot-field"
+                noValidate
+              >
+                <input type="hidden" name="form-name" value="consultation" />
                 
-                <div className={styles.contactList}>
-                  {contactInfo.map((item, index) => (
-                    <div 
-                      key={item.label} 
-                      className={styles.contactItem}
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <div className={styles.contactIcon}>{item.icon}</div>
-                      <div className={styles.contactDetail}>
-                        <span className={styles.contactLabel}>{item.label}</span>
-                        {item.link ? (
-                          <a href={item.link} className={styles.contactValue}>
-                            {item.value}
-                          </a>
-                        ) : (
-                          <strong className={styles.contactValue}>{item.value}</strong>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className={styles.appointmentNote}>
-                  <div className={styles.noteIcon}>📅</div>
-                  <div>
-                    <strong>Private Consultations Available</strong>
-                    <p>{contactData.appointment.notice}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.socialCard}>
-                <h4>Follow Our Journey</h4>
-                <div className={styles.socialLinks}>
-                  <a href={contactData.social.instagram} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
-                    <span>📷</span> Instagram
-                  </a>
-                  <a href={contactData.social.facebook} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
-                    <span>📘</span> Facebook
-                  </a>
-                  <a href={contactData.social.youtube} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
-                    <span>▶️</span> YouTube
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column - Contact Form & Map */}
-            <div className={styles.formColumn}>
-              <div className={styles.formCard}>
-                <div className={styles.formHeader}>
-                  <h3>Schedule a Consultation</h3>
-                  <p>Fill out the form and our experts will reach out within 24 hours</p>
-                </div>
-                
-                {submitStatus.type && (
-                  <div className={`${styles.statusMessage} ${styles[submitStatus.type]}`}>
-                    {submitStatus.message}
-                  </div>
-                )}
-                
-                <form 
-                  ref={formRef}
-                  onSubmit={handleSubmit} 
-                  className={styles.contactForm}
-                  name="consultation"
-                  method="POST"
-                  data-netlify="true"
-                  data-netlify-honeypot="bot-field"
-                  noValidate
-                >
-                  <input type="hidden" name="form-name" value="consultation" />
-                  
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        placeholder=" "
-                        className={errors.name ? styles.error : ''}
-                      />
-                      <label>Full Name *</label>
-                      {errors.name && <span className={styles.errorMessage}>{errors.name}</span>}
-                    </div>
-                    
-                    <div className={styles.formGroup}>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        placeholder=" "
-                        className={errors.email ? styles.error : ''}
-                      />
-                      <label>Email Address *</label>
-                      {errors.email && <span className={styles.errorMessage}>{errors.email}</span>}
-                    </div>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      placeholder=" "
+                      className={errors.name ? styles.error : ''}
+                    />
+                    <label>Full Name *</label>
+                    {errors.name && <span className={styles.errorMessage}>{errors.name}</span>}
                   </div>
                   
                   <div className={styles.formGroup}>
                     <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
+                      type="email"
+                      name="email"
+                      value={formData.email}
                       onChange={handleInputChange}
                       required
                       placeholder=" "
-                      className={errors.phone ? styles.error : ''}
+                      className={errors.email ? styles.error : ''}
                     />
-                    <label>Phone Number *</label>
-                    {errors.phone && <span className={styles.errorMessage}>{errors.phone}</span>}
+                    <label>Email Address *</label>
+                    {errors.email && <span className={styles.errorMessage}>{errors.email}</span>}
                   </div>
-                  
-                  <div className={styles.formGroup}>
-                    <textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      required
-                      rows={4}
-                      placeholder=" "
-                      className={errors.message ? styles.error : ''}
-                    />
-                    <label>Tell us about your requirements *</label>
-                    {errors.message && <span className={styles.errorMessage}>{errors.message}</span>}
-                  </div>
-                  
-                  {/* Honeypot field for spam protection */}
-                  <div style={{ position: 'absolute', left: '-5000px', top: '-5000px' }}>
-                    <input 
-                      type="text" 
-                      name="bot-field" 
-                      tabIndex={-1}
-                      autoComplete="off"
-                      onChange={() => {}} 
-                    />
-                  </div>
-                  
-                  <button 
-                    type="submit" 
-                    className={styles.submitButton}
-                    disabled={isSubmitting}
-                    onClick={() => console.log("🔘 Submit button clicked directly")}
-                  >
-                    {isSubmitting ? (
-                      <>Sending <span className={styles.spinner}></span></>
-                    ) : (
-                      <>
-                        Send Message
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-                        </svg>
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-
-              <div className={styles.mapCard}>
-                <div className={styles.mapHeader}>
-                  <span className={styles.mapPinIcon}>📍</span>
-                  <h4>Visit Our Studio</h4>
                 </div>
-                <p className={styles.mapAddress}>{contactData.contact.studio}</p>
                 
-                <div className={styles.mapContainer}>
-                  <iframe
-                    src="https://maps.google.com/maps?q=22.695814,72.858726&z=15&output=embed"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Pradeep Jewellers Location Map"
-                    className={styles.googleMap}
+                <div className={styles.formGroup}>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    placeholder=" "
+                    className={errors.phone ? styles.error : ''}
+                  />
+                  <label>Phone Number *</label>
+                  {errors.phone && <span className={styles.errorMessage}>{errors.phone}</span>}
+                </div>
+                
+                <div className={styles.formGroup}>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
+                    rows={4}
+                    placeholder=" "
+                    className={errors.message ? styles.error : ''}
+                  />
+                  <label>Tell us about your requirements *</label>
+                  {errors.message && <span className={styles.errorMessage}>{errors.message}</span>}
+                </div>
+                
+                {/* Honeypot field for spam protection */}
+                <div style={{ position: 'absolute', left: '-5000px', top: '-5000px' }}>
+                  <input 
+                    type="text" 
+                    name="bot-field" 
+                    tabIndex={-1}
+                    autoComplete="off"
+                    onChange={() => {}} 
                   />
                 </div>
                 
-                <div className={styles.mapDirections}>
-                  <a 
-                    href="https://maps.google.com/maps?daddr=22.695814,72.858726" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className={styles.directionsButton}
-                  >
-                    Get Directions
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                  </a>
-                </div>
-                
-                <div className={styles.businessHours}>
-                  <div className={styles.hoursTitle}>Business Hours</div>
-                  {contactData.businessHours.map((hours, index) => (
-                    <div key={index} className={styles.hoursRow}>
-                      <span>{hours.day}</span>
-                      <strong>{hours.hours}</strong>
-                    </div>
-                  ))}
-                </div>
+                <button 
+                  type="submit" 
+                  className={styles.submitButton}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>Sending <span className={styles.spinner}></span></>
+                  ) : (
+                    <>
+                      Send Message
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            <div className={styles.mapCard}>
+              <div className={styles.mapHeader}>
+                <span className={styles.mapPinIcon}>📍</span>
+                <h4>Visit Our Studio</h4>
+              </div>
+              <p className={styles.mapAddress}>{contactData.contact.studio}</p>
+              
+              <div className={styles.mapContainer}>
+                <iframe
+                  src="https://maps.google.com/maps?q=22.695814,72.858726&z=15&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Pradeep Jewellers Location Map"
+                  className={styles.googleMap}
+                />
+              </div>
+              
+              <div className={styles.mapDirections}>
+                <a 
+                  href="https://maps.google.com/maps?daddr=22.695814,72.858726" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={styles.directionsButton}
+                >
+                  Get Directions
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </a>
+              </div>
+              
+              <div className={styles.businessHours}>
+                <div className={styles.hoursTitle}>Business Hours</div>
+                {contactData.businessHours.map((hours, index) => (
+                  <div key={index} className={styles.hoursRow}>
+                    <span>{hours.day}</span>
+                    <strong>{hours.hours}</strong>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }
