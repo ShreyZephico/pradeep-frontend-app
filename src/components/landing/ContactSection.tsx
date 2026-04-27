@@ -131,99 +131,151 @@ export default function ContactSection() {
   };
 
   // ✅ FIXED: Submit DIRECTLY to Netlify, NOT through API route
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   console.log("🎯🎯🎯 SUBMIT BUTTON CLICKED! 🎯🎯🎯");
+  //   e.preventDefault();
+  //   console.log("PreventDefault called - page won't reload");
+    
+  //   console.log("Current form data:", formData);
+    
+  //   console.log("Starting validation...");
+  //   if (!validateForm()) {
+  //     console.log("❌ Validation failed - stopping submission");
+  //     return;
+  //   }
+    
+  //   console.log("✅ Validation passed - proceeding with submission");
+    
+  //   setIsSubmitting(true);
+  //   setSubmitStatus({ type: null, message: '' });
+    
+  //   try {
+  //     console.log("📦 Creating URLSearchParams for direct Netlify submission");
+      
+  //     // ✅ CRITICAL FIX: Use URLSearchParams (NOT FormData) for direct Netlify submission
+  //     const formDataToSend = new URLSearchParams();
+  //     formDataToSend.append("form-name", "consultation");
+  //     formDataToSend.append("name", formData.name);
+  //     formDataToSend.append("email", formData.email);
+  //     formDataToSend.append("phone", formData.phone);
+  //     formDataToSend.append("message", formData.message);
+      
+  //     console.log("✅ Data prepared for Netlify:", {
+  //       "form-name": "consultation",
+  //       name: formData.name,
+  //       email: formData.email,
+  //       phone: formData.phone,
+  //       messageLength: formData.message.length
+  //     });
+      
+  //     // Get bot-field value
+  //     const botFieldInput = document.querySelector('input[name="bot-field"]') as HTMLInputElement;
+  //     if (botFieldInput) {
+  //       console.log("🤖 Bot-field found, value:", botFieldInput.value || "(empty - good)");
+  //       if (botFieldInput.value) {
+  //         formDataToSend.append("bot-field", botFieldInput.value);
+  //       }
+  //     } else {
+  //       console.log("⚠️ Bot-field input NOT found in DOM");
+  //     }
+      
+  //     // ✅ CRITICAL FIX: Submit DIRECTLY to Netlify (root URL), NOT to /api/contact
+  //     console.log("📤 Sending DIRECT POST request to Netlify (/)...");
+  //     const response = await fetch("/", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/x-www-form-urlencoded",
+  //       },
+  //       body: formDataToSend.toString(),
+  //     });
+      
+  //     console.log("📥 Response received:", {
+  //       status: response.status,
+  //       statusText: response.statusText,
+  //       ok: response.ok
+  //     });
+      
+  //     // ✅ Netlify returns 200 OK with HTML page on success
+  //     if (response.ok) {
+  //       console.log("🎉🎉🎉 SUCCESS! Form submitted DIRECTLY to Netlify! 🎉🎉🎉");
+  //       console.log("✅ Check your Netlify dashboard in 30-60 seconds");
+  //       setSubmitStatus({
+  //         type: 'success',
+  //         message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
+  //       });
+  //       setFormData({ name: '', email: '', phone: '', message: '' });
+  //       console.log("Form reset after successful submission");
+  //     } else {
+  //       console.error("❌ Netlify returned error:", response.status);
+  //       throw new Error('Form submission failed');
+  //     }
+  //   } catch (error) {
+  //     console.error("❌❌❌ CATCH BLOCK - Submission failed:", error);
+  //     setSubmitStatus({
+  //       type: 'error',
+  //       message: 'Something went wrong. Please try again or call us directly.'
+  //     });
+  //   } finally {
+  //     setIsSubmitting(false);
+  //     console.log("🏁 Submission process completed");
+  //     setTimeout(() => {
+  //       setSubmitStatus({ type: null, message: '' });
+  //       console.log("Status message cleared");
+  //     }, 5000);
+  //   }
+  // };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("🎯🎯🎯 SUBMIT BUTTON CLICKED! 🎯🎯🎯");
-    e.preventDefault();
-    console.log("PreventDefault called - page won't reload");
+  e.preventDefault();
+  
+  if (!validateForm()) return;
+  
+  setIsSubmitting(true);
+  setSubmitStatus({ type: null, message: '' });
+  
+  try {
+    const formDataToSend = new URLSearchParams();
+    formDataToSend.append("form-name", "consultation");
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("phone", formData.phone);
+    formDataToSend.append("message", formData.message);
     
-    console.log("Current form data:", formData);
-    
-    console.log("Starting validation...");
-    if (!validateForm()) {
-      console.log("❌ Validation failed - stopping submission");
-      return;
+    const botFieldInput = document.querySelector('input[name="bot-field"]') as HTMLInputElement;
+    if (botFieldInput && botFieldInput.value) {
+      formDataToSend.append("bot-field", botFieldInput.value);
     }
     
-    console.log("✅ Validation passed - proceeding with submission");
+    // ✅ CRITICAL FIX: POST to static HTML file, NOT to "/"
+    const response = await fetch("/__forms.html", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formDataToSend.toString(),
+    });
     
-    setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: '' });
-    
-    try {
-      console.log("📦 Creating URLSearchParams for direct Netlify submission");
-      
-      // ✅ CRITICAL FIX: Use URLSearchParams (NOT FormData) for direct Netlify submission
-      const formDataToSend = new URLSearchParams();
-      formDataToSend.append("form-name", "consultation");
-      formDataToSend.append("name", formData.name);
-      formDataToSend.append("email", formData.email);
-      formDataToSend.append("phone", formData.phone);
-      formDataToSend.append("message", formData.message);
-      
-      console.log("✅ Data prepared for Netlify:", {
-        "form-name": "consultation",
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        messageLength: formData.message.length
-      });
-      
-      // Get bot-field value
-      const botFieldInput = document.querySelector('input[name="bot-field"]') as HTMLInputElement;
-      if (botFieldInput) {
-        console.log("🤖 Bot-field found, value:", botFieldInput.value || "(empty - good)");
-        if (botFieldInput.value) {
-          formDataToSend.append("bot-field", botFieldInput.value);
-        }
-      } else {
-        console.log("⚠️ Bot-field input NOT found in DOM");
-      }
-      
-      // ✅ CRITICAL FIX: Submit DIRECTLY to Netlify (root URL), NOT to /api/contact
-      console.log("📤 Sending DIRECT POST request to Netlify (/)...");
-      const response = await fetch("/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formDataToSend.toString(),
-      });
-      
-      console.log("📥 Response received:", {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
-      
-      // ✅ Netlify returns 200 OK with HTML page on success
-      if (response.ok) {
-        console.log("🎉🎉🎉 SUCCESS! Form submitted DIRECTLY to Netlify! 🎉🎉🎉");
-        console.log("✅ Check your Netlify dashboard in 30-60 seconds");
-        setSubmitStatus({
-          type: 'success',
-          message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
-        });
-        setFormData({ name: '', email: '', phone: '', message: '' });
-        console.log("Form reset after successful submission");
-      } else {
-        console.error("❌ Netlify returned error:", response.status);
-        throw new Error('Form submission failed');
-      }
-    } catch (error) {
-      console.error("❌❌❌ CATCH BLOCK - Submission failed:", error);
+    if (response.ok) {
       setSubmitStatus({
-        type: 'error',
-        message: 'Something went wrong. Please try again or call us directly.'
+        type: 'success',
+        message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
       });
-    } finally {
-      setIsSubmitting(false);
-      console.log("🏁 Submission process completed");
-      setTimeout(() => {
-        setSubmitStatus({ type: null, message: '' });
-        console.log("Status message cleared");
-      }, 5000);
+      setFormData({ name: '', email: '', phone: '', message: '' });
+    } else {
+      throw new Error('Form submission failed');
     }
-  };
+  } catch (error) {
+    console.error("Form submission error:", error);
+    setSubmitStatus({
+      type: 'error',
+      message: 'Something went wrong. Please try again or call us directly.'
+    });
+  } finally {
+    setIsSubmitting(false);
+    setTimeout(() => setSubmitStatus({ type: null, message: '' }), 5000);
+  }
+};
 
   const contactInfo: ContactInfo[] = [
     { label: "Phone", value: contactData.contact.phone, icon: "📞", link: `tel:${contactData.contact.phone}` },
