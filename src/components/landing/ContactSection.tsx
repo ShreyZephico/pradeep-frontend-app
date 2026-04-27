@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 import styles from "./css/ContactSection.module.css";
 
 // Import contact data
@@ -43,7 +44,9 @@ export default function ContactSection() {
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -97,13 +100,11 @@ export default function ContactSection() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
-  // Helper function to encode form data for Netlify
   const encode = (data: Record<string, string>) => {
     return Object.keys(data)
       .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
@@ -117,10 +118,32 @@ export default function ContactSection() {
       return;
     }
     
+    // Check if reCAPTCHA is completed
+    if (!recaptchaToken) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Please verify that you are not a robot.'
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: '' });
     
     try {
+      // First verify reCAPTCHA with your backend
+      const verifyResponse = await fetch("/api/verify-recaptcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: recaptchaToken }),
+      });
+      
+      const verification = await verifyResponse.json();
+      
+      if (!verification.success) {
+        throw new Error("reCAPTCHA verification failed. Please try again.");
+      }
+      
       // Prepare data for Netlify Forms
       const formDataToSend = {
         "form-name": "consultation",
@@ -144,6 +167,9 @@ export default function ContactSection() {
         });
         // Reset form
         setFormData({ name: '', email: '', phone: '', message: '' });
+        // Reset reCAPTCHA
+        recaptchaRef.current?.reset();
+        setRecaptchaToken(null);
       } else {
         throw new Error('Form submission failed');
       }
@@ -151,16 +177,22 @@ export default function ContactSection() {
       console.error("Form submission error:", error);
       setSubmitStatus({
         type: 'error',
-        message: 'Something went wrong. Please try again or call us directly.'
+        message: error instanceof Error ? error.message : 'Something went wrong. Please try again or call us directly.'
       });
+      // Reset reCAPTCHA on error
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     } finally {
       setIsSubmitting(false);
       
-      // Clear success message after 5 seconds
       setTimeout(() => {
         setSubmitStatus({ type: null, message: '' });
       }, 5000);
     }
+  };
+
+  const onRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
   };
 
   const contactInfo: ContactInfo[] = [
@@ -173,7 +205,6 @@ export default function ContactSection() {
 
   return (
     <section ref={sectionRef} id="contact" className={styles.section}>
-      {/* Animated Background Elements */}
       <div className={styles.bgElements}>
         <div className={styles.goldParticles} />
         <div className={styles.glowOrb1} />
@@ -199,7 +230,6 @@ export default function ContactSection() {
         </div>
 
         <div className={`${styles.grid} ${isVisible ? styles.visible : ""}`}>
-          {/* Left Column - Contact Info */}
           <div className={styles.infoColumn}>
             <div className={styles.brandCard}>
               <h3 className={styles.brandName}>
@@ -262,7 +292,6 @@ export default function ContactSection() {
             </div>
           </div>
 
-          {/* Right Column - Contact Form & Map */}
           <div className={styles.formColumn}>
             <div className={styles.formCard}>
               <div className={styles.formHeader}>
@@ -283,10 +312,8 @@ export default function ContactSection() {
                 method="POST"
                 data-netlify="true"
                 data-netlify-honeypot="bot-field"
-                data-netlify-recaptcha="true"
                 noValidate
               >
-                {/* Hidden input required for Netlify Forms */}
                 <input type="hidden" name="form-name" value="consultation" />
                 
                 <div className={styles.formRow}>
@@ -347,10 +374,15 @@ export default function ContactSection() {
                   {errors.message && <span className={styles.errorMessage}>{errors.message}</span>}
                 </div>
                 
-                {/* reCAPTCHA "I am not a robot" - Netlify will automatically inject this */}
-                <div data-netlify-recaptcha="true" className={styles.recaptchaWrapper}></div>
+                {/* Google reCAPTCHA */}
+                <div className={styles.recaptchaWrapper}>
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                    onChange={onRecaptchaChange}
+                  />
+                </div>
                 
-                {/* Honeypot field for spam protection - hidden from users */}
                 <div style={{ position: 'absolute', left: '-5000px', top: '-5000px' }}>
                   <input 
                     type="text" 
@@ -387,7 +419,6 @@ export default function ContactSection() {
               </div>
               <p className={styles.mapAddress}>{contactData.contact.studio}</p>
               
-              {/* Embedded Google Map */}
               <div className={styles.mapContainer}>
                 <iframe
                   src="https://maps.google.com/maps?q=22.695814,72.858726&z=15&output=embed"

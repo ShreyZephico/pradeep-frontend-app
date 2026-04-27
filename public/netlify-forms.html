@@ -1,45 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Netlify Form Detection</title>
-  </head>
-  <body>
-    <!-- 
-        CRITICAL: Netlify scans HTML files during build to detect forms.
-        This hidden form ensures your form is detected.
-        It will never be visible to users.
-    -->
-
-    <!-- MAIN FORM DETECTION -->
+</head>
+<body>
     <form
-      name="consultation"
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
-      data-netlify-recaptcha="true"
-      hidden
+        name="consultation"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+        hidden
     >
-      <input type="text" name="name" />
-      <input type="email" name="email" />
-      <input type="tel" name="phone" />
-      <textarea name="message"></textarea>
-      <input type="text" name="bot-field" />
+        <input type="text" name="name" />
+        <input type="email" name="email" />
+        <input type="tel" name="phone" />
+        <textarea name="message"></textarea>
+        <input type="text" name="bot-field" />
     </form>
-
-    <!-- Backup form detection (ensures Netlify captures it) -->
-    <form
-      name="consultation-backup"
-      method="POST"
-      data-netlify="true"
-      data-netlify-recaptcha="true"
-      hidden
-    >
-      <input type="text" name="name" />
-      <input type="email" name="email" />
-      <input type="tel" name="phone" />
-      <textarea name="message"></textarea>
-    </form>
-  </body>
+</body>
 </html>
