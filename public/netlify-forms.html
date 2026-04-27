@@ -5,13 +5,14 @@
     <title>Netlify Form Detection</title>
 </head>
 <body>
+    <!-- Alternative: Using "netlify" attribute (more reliable) -->
     <form
         name="consultation"
-        method="POST"
-        data-netlify="true"
-        data-netlify-honeypot="bot-field"
-        hidden
+        netlify
+        netlify-honeypot="bot-field"
+        style="display: none;"
     >
+        <input type="hidden" name="form-name" value="consultation" />
         <input type="text" name="name" />
         <input type="email" name="email" />
         <input type="tel" name="phone" />

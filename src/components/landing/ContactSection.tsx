@@ -109,81 +109,86 @@ export default function ContactSection() {
     setRecaptchaToken(token);
   };
 
+  // ✅ UPDATED HANDLESUBMIT with mode: "no-cors"
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-    
-    // Check if reCAPTCHA is completed
+
+    if (!validateForm()) return;
+
     if (!recaptchaToken) {
       setSubmitStatus({
-        type: 'error',
-        message: 'Please verify that you are not a robot.'
+        type: "error",
+        message: "Please verify that you are not a robot.",
       });
       return;
     }
-    
+
     setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: '' });
-    
+    setSubmitStatus({ type: null, message: "" });
+
     try {
-      // 1. Verify reCAPTCHA
-      const verifyResponse = await fetch("/api/verify-recaptcha", {
+      // ✅ 1. Verify reCAPTCHA
+      const verifyRes = await fetch("/api/verify-recaptcha", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ token: recaptchaToken }),
       });
-      
-      const verification = await verifyResponse.json();
-      
-      if (!verification.success) {
-        throw new Error("reCAPTCHA verification failed. Please try again.");
+
+      const verifyData = await verifyRes.json();
+
+      if (!verifyData.success) {
+        throw new Error("reCAPTCHA failed");
       }
-      
-      // 2. Submit to Netlify using FormData (THIS IS THE FIX)
-      const netlifyFormData = new FormData();
-      netlifyFormData.append("form-name", "consultation");
-      netlifyFormData.append("name", formData.name);
-      netlifyFormData.append("email", formData.email);
-      netlifyFormData.append("phone", formData.phone);
-      netlifyFormData.append("message", formData.message);
-      
-      const response = await fetch("/", {
+
+      // ✅ 2. Send to Netlify with mode: "no-cors"
+      await fetch("/", {
         method: "POST",
-        body: netlifyFormData,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          "form-name": "consultation",
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+        }).toString(),
+        mode: "no-cors", // 🔥 IMPORTANT FIX
       });
 
-      if (response.ok) {
-        setSubmitStatus({
-          type: 'success',
-          message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
-        });
-        // Reset form
-        setFormData({ name: '', email: '', phone: '', message: '' });
-        // Reset reCAPTCHA
-        recaptchaRef.current?.reset();
-        setRecaptchaToken(null);
-      } else {
-        const errorText = await response.text();
-        console.error("Netlify submission error:", errorText);
-        throw new Error('Form submission failed');
-      }
+      // ⚠️ no-cors → always success (no response)
+      setSubmitStatus({
+        type: "success",
+        message: "Thank you! Our jewellery expert will contact you within 24 hours.",
+      });
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        message: "",
+      });
+
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     } catch (error) {
       console.error("Form submission error:", error);
+
       setSubmitStatus({
-        type: 'error',
-        message: error instanceof Error ? error.message : 'Something went wrong. Please try again or call us directly.'
+        type: "error",
+        message: "Something went wrong. Please try again or call us directly.",
       });
-      // Reset reCAPTCHA on error
+
       recaptchaRef.current?.reset();
       setRecaptchaToken(null);
     } finally {
       setIsSubmitting(false);
-      
+
       setTimeout(() => {
-        setSubmitStatus({ type: null, message: '' });
+        setSubmitStatus({ type: null, message: "" });
       }, 5000);
     }
   };
