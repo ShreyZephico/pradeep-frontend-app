@@ -30,7 +30,6 @@ interface FormErrors {
 export default function ContactSection() {
   const [isVisible, setIsVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]); // 🐛 DEBUG: Store debug messages
   const [submitStatus, setSubmitStatus] = useState<{
     type: 'success' | 'error' | null;
     message: string;
@@ -45,22 +44,16 @@ export default function ContactSection() {
   
   const [errors, setErrors] = useState<FormErrors>({});
   const sectionRef = useRef<HTMLElement>(null);
+  const formRef = useRef<HTMLFormElement>(null); // Add ref for form
 
-  // 🐛 DEBUG: Helper function to add debug messages
-  const addDebugMessage = (message: string, data?: any) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const debugLine = `[${timestamp}] ${message}${data ? ': ' + JSON.stringify(data, null, 2) : ''}`;
-    setDebugInfo(prev => [debugLine, ...prev].slice(0, 10)); // Keep last 10 messages
-    console.log(`🐛 DEBUG: ${message}`, data || '');
-  };
-
+  // Force debug logging on component mount
   useEffect(() => {
-    addDebugMessage('ContactSection component mounted');
+    console.log("🚀 ContactSection MOUNTED - Component loaded successfully");
     
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          addDebugMessage('Section is now visible in viewport');
+          console.log("📱 Section visible in viewport");
           setIsVisible(true);
           observer.disconnect();
         }
@@ -74,55 +67,64 @@ export default function ContactSection() {
 
     return () => {
       observer.disconnect();
-      addDebugMessage('ContactSection component unmounted');
+      console.log("👋 ContactSection UNMOUNTED");
     };
   }, []);
 
   const validateForm = (): boolean => {
-    addDebugMessage('Starting form validation', formData);
+    console.log("🔍 Starting validation with data:", { ...formData, message: formData.message.substring(0, 20) + "..." });
+    
     const newErrors: FormErrors = {};
     
     if (!formData.name.trim()) {
       newErrors.name = 'Full name is required';
-      addDebugMessage('❌ Validation failed: Name is required');
+      console.log("❌ Name validation failed");
     } else if (formData.name.length < 2) {
       newErrors.name = 'Name must be at least 2 characters';
-      addDebugMessage('❌ Validation failed: Name too short', { length: formData.name.length });
+      console.log("❌ Name too short:", formData.name.length);
+    } else {
+      console.log("✅ Name validation passed");
     }
     
     if (!formData.email.trim()) {
       newErrors.email = 'Email address is required';
-      addDebugMessage('❌ Validation failed: Email is required');
+      console.log("❌ Email validation failed");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
-      addDebugMessage('❌ Validation failed: Invalid email format', { email: formData.email });
+      console.log("❌ Email format invalid:", formData.email);
+    } else {
+      console.log("✅ Email validation passed");
     }
     
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-      addDebugMessage('❌ Validation failed: Phone is required');
+      console.log("❌ Phone validation failed");
     } else if (!/^[0-9]{10}$/.test(formData.phone.replace(/\D/g, ''))) {
       newErrors.phone = 'Please enter a valid 10-digit phone number';
-      addDebugMessage('❌ Validation failed: Invalid phone number', { phone: formData.phone });
+      console.log("❌ Phone invalid:", formData.phone);
+    } else {
+      console.log("✅ Phone validation passed");
     }
     
     if (!formData.message.trim()) {
       newErrors.message = 'Message is required';
-      addDebugMessage('❌ Validation failed: Message is required');
+      console.log("❌ Message validation failed");
     } else if (formData.message.length < 10) {
       newErrors.message = 'Message must be at least 10 characters';
-      addDebugMessage('❌ Validation failed: Message too short', { length: formData.message.length });
+      console.log("❌ Message too short:", formData.message.length);
+    } else {
+      console.log("✅ Message validation passed");
     }
     
     setErrors(newErrors);
     const isValid = Object.keys(newErrors).length === 0;
-    addDebugMessage(`✅ Validation ${isValid ? 'PASSED' : 'FAILED'}`, { errors: newErrors });
+    console.log(`📊 Validation ${isValid ? "PASSED ✅" : "FAILED ❌"}`, newErrors);
     return isValid;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    addDebugMessage(`Input changed: ${name} = "${value}"`);
+    console.log(`✏️ Input changed: ${name} = "${value}"`);
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -130,19 +132,25 @@ export default function ContactSection() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("🎯🎯🎯 SUBMIT BUTTON CLICKED! 🎯🎯🎯");
     e.preventDefault();
-    addDebugMessage('🚀 FORM SUBMISSION STARTED');
+    console.log("PreventDefault called - page won't reload");
     
+    console.log("Current form data:", formData);
+    
+    console.log("Starting validation...");
     if (!validateForm()) {
-      addDebugMessage('❌ Form submission stopped due to validation errors');
+      console.log("❌ Validation failed - stopping submission");
       return;
     }
+    
+    console.log("✅ Validation passed - proceeding with submission");
     
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: '' });
     
     try {
-      addDebugMessage('Creating FormData object');
+      console.log("📦 Creating FormData object");
       const formDataToSend = new FormData();
       formDataToSend.append("form-name", "consultation");
       formDataToSend.append("name", formData.name);
@@ -150,78 +158,77 @@ export default function ContactSection() {
       formDataToSend.append("phone", formData.phone);
       formDataToSend.append("message", formData.message);
       
-      addDebugMessage('FormData fields appended:', {
+      console.log("✅ FormData created with fields:", {
         "form-name": "consultation",
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        message: formData.message.substring(0, 50) + (formData.message.length > 50 ? '...' : '')
+        messageLength: formData.message.length
       });
       
       // Get bot-field value
       const botFieldInput = document.querySelector('input[name="bot-field"]') as HTMLInputElement;
       if (botFieldInput) {
-        addDebugMessage('✅ Bot-field input found', { value: botFieldInput.value || '(empty - good, this means real user)' });
+        console.log("🤖 Bot-field found, value:", botFieldInput.value || "(empty - good)");
         if (botFieldInput.value) {
           formDataToSend.append("bot-field", botFieldInput.value);
-          addDebugMessage('⚠️ Bot-field has value - this might be flagged as spam', { value: botFieldInput.value });
         }
       } else {
-        addDebugMessage('⚠️ Bot-field input NOT found in DOM');
+        console.log("⚠️ Bot-field input NOT found in DOM");
       }
       
-      // Log all form data being sent
-      addDebugMessage('📤 Sending POST request to /api/contact');
-      
-      const startTime = Date.now();
+      console.log("📤 Sending POST request to /api/contact...");
       const response = await fetch("/api/contact", {
         method: "POST",
         body: formDataToSend,
       });
-      const endTime = Date.now();
       
-      addDebugMessage(`📥 Response received in ${endTime - startTime}ms`, {
+      console.log("📥 Response received:", {
         status: response.status,
         statusText: response.statusText,
         ok: response.ok
       });
       
       const result = await response.json();
-      addDebugMessage('📄 Response body:', result);
+      console.log("📄 Response body:", result);
       
       if (response.ok && result.success) {
-        addDebugMessage('✅✅✅ FORM SUBMISSION SUCCESSFUL! ✅✅✅');
-        addDebugMessage('Data should appear in Netlify dashboard within 1-2 minutes');
+        console.log("🎉🎉🎉 SUCCESS! Form submitted to Netlify! 🎉🎉🎉");
         setSubmitStatus({
           type: 'success',
           message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
         });
         setFormData({ name: '', email: '', phone: '', message: '' });
-        addDebugMessage('Form reset after successful submission');
+        console.log("Form reset after successful submission");
       } else {
-        addDebugMessage('❌ Form submission failed - server returned error', {
-          status: response.status,
-          error: result.error
-        });
+        console.error("❌ Server returned error:", result);
         throw new Error(result.error || 'Form submission failed');
       }
     } catch (error) {
-      addDebugMessage('❌❌❌ FORM SUBMISSION ERROR ❌❌❌', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      console.error("Form submission error:", error);
+      console.error("❌❌❌ CATCH BLOCK - Submission failed:", error);
       setSubmitStatus({
         type: 'error',
         message: 'Something went wrong. Please try again or call us directly.'
       });
     } finally {
       setIsSubmitting(false);
-      addDebugMessage('🏁 Form submission process completed');
+      console.log("🏁 Submission process completed");
       setTimeout(() => {
         setSubmitStatus({ type: null, message: '' });
-        addDebugMessage('Status message cleared after 5 seconds');
+        console.log("Status message cleared");
       }, 5000);
+    }
+  };
+
+  // Test function to check if form is working
+  const testSubmit = () => {
+    console.log("🧪 TEST: Manual test submit triggered");
+    if (formRef.current) {
+      console.log("Form ref found, submitting...");
+      const event = new Event('submit', { bubbles: true, cancelable: true });
+      formRef.current.dispatchEvent(event);
+    } else {
+      console.error("Form ref not found!");
     }
   };
 
@@ -234,300 +241,280 @@ export default function ContactSection() {
   ];
 
   return (
-    <section ref={sectionRef} id="contact" className={styles.section}>
-      {/* 🐛 DEBUG PANEL - Shows only in development */}
+    <>
+      {/* TEST BUTTON - Visible only in development */}
       {process.env.NODE_ENV !== 'production' && (
         <div style={{
           position: 'fixed',
           bottom: '20px',
-          right: '20px',
-          width: '400px',
-          maxHeight: '300px',
-          backgroundColor: '#1e1e1e',
-          color: '#0f0',
-          fontFamily: 'monospace',
-          fontSize: '11px',
-          padding: '10px',
-          borderRadius: '8px',
-          overflowY: 'auto',
+          left: '20px',
           zIndex: 9999,
-          boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-          border: '1px solid #0f0',
-          pointerEvents: 'none'
-        }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '8px', borderBottom: '1px solid #0f0', paddingBottom: '4px' }}>
-            🐛 DEBUG CONSOLE (Last 10 events)
-          </div>
-          {debugInfo.length === 0 ? (
-            <div style={{ color: '#888' }}>Waiting for actions...</div>
-          ) : (
-            debugInfo.map((msg, idx) => (
-              <div key={idx} style={{ 
-                marginBottom: '4px', 
-                wordBreak: 'break-all',
-                borderLeft: '2px solid #0f0',
-                paddingLeft: '6px',
-                fontSize: '10px'
-              }}>
-                {msg}
-              </div>
-            ))
-          )}
-          <div style={{ fontSize: '9px', color: '#888', marginTop: '8px', borderTop: '1px solid #333', paddingTop: '4px' }}>
-            This panel only shows in development mode
-          </div>
+          backgroundColor: '#ff4444',
+          padding: '10px 20px',
+          borderRadius: '8px',
+          color: 'white',
+          fontFamily: 'monospace',
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+        }} onClick={testSubmit}>
+          🧪 TEST FORM SUBMIT
         </div>
       )}
 
-      <div className={styles.bgElements}>
-        <div className={styles.goldParticles} />
-        <div className={styles.glowOrb1} />
-        <div className={styles.glowOrb2} />
-        <div className={styles.diamondDust} />
-      </div>
-
-      <div className={styles.container}>
-        <div className={`${styles.header} ${isVisible ? styles.visible : ""}`}>
-          <div className={styles.eyebrowWrapper}>
-            <span className={styles.eyebrowLine}></span>
-            <p className={styles.eyebrow}>Connect With Us</p>
-            <span className={styles.eyebrowLine}></span>
-          </div>
-          <h2 className={styles.title}>
-            Let's Begin Your 
-            <span className={styles.goldText}> Luxury Journey</span>
-          </h2>
-          <p className={styles.subtitle}>
-            Experience personalized service and expert guidance for your special moments
-          </p>
-          <div className={styles.headerAccent} />
+      <section ref={sectionRef} id="contact" className={styles.section}>
+        <div className={styles.bgElements}>
+          <div className={styles.goldParticles} />
+          <div className={styles.glowOrb1} />
+          <div className={styles.glowOrb2} />
+          <div className={styles.diamondDust} />
         </div>
 
-        <div className={`${styles.grid} ${isVisible ? styles.visible : ""}`}>
-          {/* Left Column - Contact Info */}
-          <div className={styles.infoColumn}>
-            <div className={styles.brandCard}>
-              <h3 className={styles.brandName}>
-                {contactData.brand.name}
-                <span className={styles.sinceTag}>{contactData.brand.tagline}</span>
-              </h3>
-              <p className={styles.brandDescription}>{contactData.brand.description}</p>
+        <div className={styles.container}>
+          <div className={`${styles.header} ${isVisible ? styles.visible : ""}`}>
+            <div className={styles.eyebrowWrapper}>
+              <span className={styles.eyebrowLine}></span>
+              <p className={styles.eyebrow}>Connect With Us</p>
+              <span className={styles.eyebrowLine}></span>
             </div>
-
-            <div className={styles.contactCard}>
-              <div className={styles.cardHeader}>
-                <div className={styles.cardIcon}>💎</div>
-                <h4>Get in Touch</h4>
-              </div>
-              
-              <div className={styles.contactList}>
-                {contactInfo.map((item, index) => (
-                  <div 
-                    key={item.label} 
-                    className={styles.contactItem}
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <div className={styles.contactIcon}>{item.icon}</div>
-                    <div className={styles.contactDetail}>
-                      <span className={styles.contactLabel}>{item.label}</span>
-                      {item.link ? (
-                        <a href={item.link} className={styles.contactValue}>
-                          {item.value}
-                        </a>
-                      ) : (
-                        <strong className={styles.contactValue}>{item.value}</strong>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className={styles.appointmentNote}>
-                <div className={styles.noteIcon}>📅</div>
-                <div>
-                  <strong>Private Consultations Available</strong>
-                  <p>{contactData.appointment.notice}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.socialCard}>
-              <h4>Follow Our Journey</h4>
-              <div className={styles.socialLinks}>
-                <a href={contactData.social.instagram} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
-                  <span>📷</span> Instagram
-                </a>
-                <a href={contactData.social.facebook} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
-                  <span>📘</span> Facebook
-                </a>
-                <a href={contactData.social.youtube} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
-                  <span>▶️</span> YouTube
-                </a>
-              </div>
-            </div>
+            <h2 className={styles.title}>
+              Let's Begin Your 
+              <span className={styles.goldText}> Luxury Journey</span>
+            </h2>
+            <p className={styles.subtitle}>
+              Experience personalized service and expert guidance for your special moments
+            </p>
+            <div className={styles.headerAccent} />
           </div>
 
-          {/* Right Column - Contact Form & Map */}
-          <div className={styles.formColumn}>
-            <div className={styles.formCard}>
-              <div className={styles.formHeader}>
-                <h3>Schedule a Consultation</h3>
-                <p>Fill out the form and our experts will reach out within 24 hours</p>
+          <div className={`${styles.grid} ${isVisible ? styles.visible : ""}`}>
+            {/* Left Column - Contact Info */}
+            <div className={styles.infoColumn}>
+              <div className={styles.brandCard}>
+                <h3 className={styles.brandName}>
+                  {contactData.brand.name}
+                  <span className={styles.sinceTag}>{contactData.brand.tagline}</span>
+                </h3>
+                <p className={styles.brandDescription}>{contactData.brand.description}</p>
               </div>
-              
-              {submitStatus.type && (
-                <div className={`${styles.statusMessage} ${styles[submitStatus.type]}`}>
-                  {submitStatus.message}
+
+              <div className={styles.contactCard}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardIcon}>💎</div>
+                  <h4>Get in Touch</h4>
                 </div>
-              )}
-              
-              <form 
-                onSubmit={handleSubmit} 
-                className={styles.contactForm}
-                name="consultation"
-                method="POST"
-                data-netlify="true"
-                data-netlify-honeypot="bot-field"
-                noValidate
-              >
-                <input type="hidden" name="form-name" value="consultation" />
                 
-                <div className={styles.formRow}>
-                  <div className={styles.formGroup}>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      placeholder=" "
-                      className={errors.name ? styles.error : ''}
-                    />
-                    <label>Full Name *</label>
-                    {errors.name && <span className={styles.errorMessage}>{errors.name}</span>}
+                <div className={styles.contactList}>
+                  {contactInfo.map((item, index) => (
+                    <div 
+                      key={item.label} 
+                      className={styles.contactItem}
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <div className={styles.contactIcon}>{item.icon}</div>
+                      <div className={styles.contactDetail}>
+                        <span className={styles.contactLabel}>{item.label}</span>
+                        {item.link ? (
+                          <a href={item.link} className={styles.contactValue}>
+                            {item.value}
+                          </a>
+                        ) : (
+                          <strong className={styles.contactValue}>{item.value}</strong>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className={styles.appointmentNote}>
+                  <div className={styles.noteIcon}>📅</div>
+                  <div>
+                    <strong>Private Consultations Available</strong>
+                    <p>{contactData.appointment.notice}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.socialCard}>
+                <h4>Follow Our Journey</h4>
+                <div className={styles.socialLinks}>
+                  <a href={contactData.social.instagram} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
+                    <span>📷</span> Instagram
+                  </a>
+                  <a href={contactData.social.facebook} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
+                    <span>📘</span> Facebook
+                  </a>
+                  <a href={contactData.social.youtube} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
+                    <span>▶️</span> YouTube
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Contact Form & Map */}
+            <div className={styles.formColumn}>
+              <div className={styles.formCard}>
+                <div className={styles.formHeader}>
+                  <h3>Schedule a Consultation</h3>
+                  <p>Fill out the form and our experts will reach out within 24 hours</p>
+                </div>
+                
+                {submitStatus.type && (
+                  <div className={`${styles.statusMessage} ${styles[submitStatus.type]}`}>
+                    {submitStatus.message}
+                  </div>
+                )}
+                
+                <form 
+                  ref={formRef}
+                  onSubmit={handleSubmit} 
+                  className={styles.contactForm}
+                  name="consultation"
+                  method="POST"
+                  data-netlify="true"
+                  data-netlify-honeypot="bot-field"
+                  noValidate
+                >
+                  <input type="hidden" name="form-name" value="consultation" />
+                  
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                        placeholder=" "
+                        className={errors.name ? styles.error : ''}
+                      />
+                      <label>Full Name *</label>
+                      {errors.name && <span className={styles.errorMessage}>{errors.name}</span>}
+                    </div>
+                    
+                    <div className={styles.formGroup}>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        placeholder=" "
+                        className={errors.email ? styles.error : ''}
+                      />
+                      <label>Email Address *</label>
+                      {errors.email && <span className={styles.errorMessage}>{errors.email}</span>}
+                    </div>
                   </div>
                   
                   <div className={styles.formGroup}>
                     <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
                       onChange={handleInputChange}
                       required
                       placeholder=" "
-                      className={errors.email ? styles.error : ''}
+                      className={errors.phone ? styles.error : ''}
                     />
-                    <label>Email Address *</label>
-                    {errors.email && <span className={styles.errorMessage}>{errors.email}</span>}
+                    <label>Phone Number *</label>
+                    {errors.phone && <span className={styles.errorMessage}>{errors.phone}</span>}
                   </div>
-                </div>
-                
-                <div className={styles.formGroup}>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    placeholder=" "
-                    className={errors.phone ? styles.error : ''}
-                  />
-                  <label>Phone Number *</label>
-                  {errors.phone && <span className={styles.errorMessage}>{errors.phone}</span>}
-                </div>
-                
-                <div className={styles.formGroup}>
-                  <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    required
-                    rows={4}
-                    placeholder=" "
-                    className={errors.message ? styles.error : ''}
-                  />
-                  <label>Tell us about your requirements *</label>
-                  {errors.message && <span className={styles.errorMessage}>{errors.message}</span>}
-                </div>
-                
-                {/* Honeypot field for spam protection */}
-                <div style={{ position: 'absolute', left: '-5000px', top: '-5000px' }}>
-                  <input 
-                    type="text" 
-                    name="bot-field" 
-                    tabIndex={-1}
-                    autoComplete="off"
-                    onChange={() => {}} 
-                  />
-                </div>
-                
-                <button 
-                  type="submit" 
-                  className={styles.submitButton}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>Sending <span className={styles.spinner}></span></>
-                  ) : (
-                    <>
-                      Send Message
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-                      </svg>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
+                  
+                  <div className={styles.formGroup}>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      required
+                      rows={4}
+                      placeholder=" "
+                      className={errors.message ? styles.error : ''}
+                    />
+                    <label>Tell us about your requirements *</label>
+                    {errors.message && <span className={styles.errorMessage}>{errors.message}</span>}
+                  </div>
+                  
+                  {/* Honeypot field for spam protection */}
+                  <div style={{ position: 'absolute', left: '-5000px', top: '-5000px' }}>
+                    <input 
+                      type="text" 
+                      name="bot-field" 
+                      tabIndex={-1}
+                      autoComplete="off"
+                      onChange={() => {}} 
+                    />
+                  </div>
+                  
+                  <button 
+                    type="submit" 
+                    className={styles.submitButton}
+                    disabled={isSubmitting}
+                    onClick={() => console.log("🔘 Submit button clicked directly")}
+                  >
+                    {isSubmitting ? (
+                      <>Sending <span className={styles.spinner}></span></>
+                    ) : (
+                      <>
+                        Send Message
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
 
-            <div className={styles.mapCard}>
-              <div className={styles.mapHeader}>
-                <span className={styles.mapPinIcon}>📍</span>
-                <h4>Visit Our Studio</h4>
-              </div>
-              <p className={styles.mapAddress}>{contactData.contact.studio}</p>
-              
-              <div className={styles.mapContainer}>
-                <iframe
-                  src="https://maps.google.com/maps?q=22.695814,72.858726&z=15&output=embed"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Pradeep Jewellers Location Map"
-                  className={styles.googleMap}
-                />
-              </div>
-              
-              <div className={styles.mapDirections}>
-                <a 
-                  href="https://maps.google.com/maps?daddr=22.695814,72.858726" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className={styles.directionsButton}
-                >
-                  Get Directions
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </a>
-              </div>
-              
-              <div className={styles.businessHours}>
-                <div className={styles.hoursTitle}>Business Hours</div>
-                {contactData.businessHours.map((hours, index) => (
-                  <div key={index} className={styles.hoursRow}>
-                    <span>{hours.day}</span>
-                    <strong>{hours.hours}</strong>
-                  </div>
-                ))}
+              <div className={styles.mapCard}>
+                <div className={styles.mapHeader}>
+                  <span className={styles.mapPinIcon}>📍</span>
+                  <h4>Visit Our Studio</h4>
+                </div>
+                <p className={styles.mapAddress}>{contactData.contact.studio}</p>
+                
+                <div className={styles.mapContainer}>
+                  <iframe
+                    src="https://maps.google.com/maps?q=22.695814,72.858726&z=15&output=embed"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Pradeep Jewellers Location Map"
+                    className={styles.googleMap}
+                  />
+                </div>
+                
+                <div className={styles.mapDirections}>
+                  <a 
+                    href="https://maps.google.com/maps?daddr=22.695814,72.858726" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className={styles.directionsButton}
+                  >
+                    Get Directions
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </a>
+                </div>
+                
+                <div className={styles.businessHours}>
+                  <div className={styles.hoursTitle}>Business Hours</div>
+                  {contactData.businessHours.map((hours, index) => (
+                    <div key={index} className={styles.hoursRow}>
+                      <span>{hours.day}</span>
+                      <strong>{hours.hours}</strong>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
