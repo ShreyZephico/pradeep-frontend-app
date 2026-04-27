@@ -117,6 +117,10 @@ export default function ContactSection() {
       formDataToSend.append("email", formData.email);
       formDataToSend.append("phone", formData.phone);
       formDataToSend.append("message", formData.message);
+      const botFieldInput = document.querySelector('input[name="bot-field"]') as HTMLInputElement;
+if (botFieldInput && botFieldInput.value) {
+  formDataToSend.append("bot-field", botFieldInput.value);
+}
       
       // Submit to our API route (which forwards to Netlify)
       const response = await fetch("/api/contact", {
