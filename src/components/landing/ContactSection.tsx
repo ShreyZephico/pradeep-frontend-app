@@ -30,6 +30,7 @@ interface FormErrors {
 export default function ContactSection() {
   const [isVisible, setIsVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]); // 🐛 DEBUG: Store debug messages
   const [submitStatus, setSubmitStatus] = useState<{
     type: 'success' | 'error' | null;
     message: string;
@@ -45,10 +46,21 @@ export default function ContactSection() {
   const [errors, setErrors] = useState<FormErrors>({});
   const sectionRef = useRef<HTMLElement>(null);
 
+  // 🐛 DEBUG: Helper function to add debug messages
+  const addDebugMessage = (message: string, data?: any) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const debugLine = `[${timestamp}] ${message}${data ? ': ' + JSON.stringify(data, null, 2) : ''}`;
+    setDebugInfo(prev => [debugLine, ...prev].slice(0, 10)); // Keep last 10 messages
+    console.log(`🐛 DEBUG: ${message}`, data || '');
+  };
+
   useEffect(() => {
+    addDebugMessage('ContactSection component mounted');
+    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          addDebugMessage('Section is now visible in viewport');
           setIsVisible(true);
           observer.disconnect();
         }
@@ -60,42 +72,57 @@ export default function ContactSection() {
       observer.observe(sectionRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      addDebugMessage('ContactSection component unmounted');
+    };
   }, []);
 
   const validateForm = (): boolean => {
+    addDebugMessage('Starting form validation', formData);
     const newErrors: FormErrors = {};
     
     if (!formData.name.trim()) {
       newErrors.name = 'Full name is required';
+      addDebugMessage('❌ Validation failed: Name is required');
     } else if (formData.name.length < 2) {
       newErrors.name = 'Name must be at least 2 characters';
+      addDebugMessage('❌ Validation failed: Name too short', { length: formData.name.length });
     }
     
     if (!formData.email.trim()) {
       newErrors.email = 'Email address is required';
+      addDebugMessage('❌ Validation failed: Email is required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
+      addDebugMessage('❌ Validation failed: Invalid email format', { email: formData.email });
     }
     
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
+      addDebugMessage('❌ Validation failed: Phone is required');
     } else if (!/^[0-9]{10}$/.test(formData.phone.replace(/\D/g, ''))) {
       newErrors.phone = 'Please enter a valid 10-digit phone number';
+      addDebugMessage('❌ Validation failed: Invalid phone number', { phone: formData.phone });
     }
     
     if (!formData.message.trim()) {
       newErrors.message = 'Message is required';
+      addDebugMessage('❌ Validation failed: Message is required');
     } else if (formData.message.length < 10) {
       newErrors.message = 'Message must be at least 10 characters';
+      addDebugMessage('❌ Validation failed: Message too short', { length: formData.message.length });
     }
     
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    addDebugMessage(`✅ Validation ${isValid ? 'PASSED' : 'FAILED'}`, { errors: newErrors });
+    return isValid;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    addDebugMessage(`Input changed: ${name} = "${value}"`);
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -104,42 +131,85 @@ export default function ContactSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    addDebugMessage('🚀 FORM SUBMISSION STARTED');
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      addDebugMessage('❌ Form submission stopped due to validation errors');
+      return;
+    }
     
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: '' });
     
     try {
+      addDebugMessage('Creating FormData object');
       const formDataToSend = new FormData();
       formDataToSend.append("form-name", "consultation");
       formDataToSend.append("name", formData.name);
       formDataToSend.append("email", formData.email);
       formDataToSend.append("phone", formData.phone);
       formDataToSend.append("message", formData.message);
-      const botFieldInput = document.querySelector('input[name="bot-field"]') as HTMLInputElement;
-if (botFieldInput && botFieldInput.value) {
-  formDataToSend.append("bot-field", botFieldInput.value);
-}
       
-      // Submit to our API route (which forwards to Netlify)
+      addDebugMessage('FormData fields appended:', {
+        "form-name": "consultation",
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message.substring(0, 50) + (formData.message.length > 50 ? '...' : '')
+      });
+      
+      // Get bot-field value
+      const botFieldInput = document.querySelector('input[name="bot-field"]') as HTMLInputElement;
+      if (botFieldInput) {
+        addDebugMessage('✅ Bot-field input found', { value: botFieldInput.value || '(empty - good, this means real user)' });
+        if (botFieldInput.value) {
+          formDataToSend.append("bot-field", botFieldInput.value);
+          addDebugMessage('⚠️ Bot-field has value - this might be flagged as spam', { value: botFieldInput.value });
+        }
+      } else {
+        addDebugMessage('⚠️ Bot-field input NOT found in DOM');
+      }
+      
+      // Log all form data being sent
+      addDebugMessage('📤 Sending POST request to /api/contact');
+      
+      const startTime = Date.now();
       const response = await fetch("/api/contact", {
         method: "POST",
         body: formDataToSend,
       });
+      const endTime = Date.now();
+      
+      addDebugMessage(`📥 Response received in ${endTime - startTime}ms`, {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
       
       const result = await response.json();
+      addDebugMessage('📄 Response body:', result);
       
       if (response.ok && result.success) {
+        addDebugMessage('✅✅✅ FORM SUBMISSION SUCCESSFUL! ✅✅✅');
+        addDebugMessage('Data should appear in Netlify dashboard within 1-2 minutes');
         setSubmitStatus({
           type: 'success',
           message: 'Thank you! Our jewellery expert will contact you within 24 hours.'
         });
         setFormData({ name: '', email: '', phone: '', message: '' });
+        addDebugMessage('Form reset after successful submission');
       } else {
+        addDebugMessage('❌ Form submission failed - server returned error', {
+          status: response.status,
+          error: result.error
+        });
         throw new Error(result.error || 'Form submission failed');
       }
     } catch (error) {
+      addDebugMessage('❌❌❌ FORM SUBMISSION ERROR ❌❌❌', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       console.error("Form submission error:", error);
       setSubmitStatus({
         type: 'error',
@@ -147,7 +217,11 @@ if (botFieldInput && botFieldInput.value) {
       });
     } finally {
       setIsSubmitting(false);
-      setTimeout(() => setSubmitStatus({ type: null, message: '' }), 5000);
+      addDebugMessage('🏁 Form submission process completed');
+      setTimeout(() => {
+        setSubmitStatus({ type: null, message: '' });
+        addDebugMessage('Status message cleared after 5 seconds');
+      }, 5000);
     }
   };
 
@@ -161,6 +235,50 @@ if (botFieldInput && botFieldInput.value) {
 
   return (
     <section ref={sectionRef} id="contact" className={styles.section}>
+      {/* 🐛 DEBUG PANEL - Shows only in development */}
+      {process.env.NODE_ENV !== 'production' && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          width: '400px',
+          maxHeight: '300px',
+          backgroundColor: '#1e1e1e',
+          color: '#0f0',
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          padding: '10px',
+          borderRadius: '8px',
+          overflowY: 'auto',
+          zIndex: 9999,
+          boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+          border: '1px solid #0f0',
+          pointerEvents: 'none'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px', borderBottom: '1px solid #0f0', paddingBottom: '4px' }}>
+            🐛 DEBUG CONSOLE (Last 10 events)
+          </div>
+          {debugInfo.length === 0 ? (
+            <div style={{ color: '#888' }}>Waiting for actions...</div>
+          ) : (
+            debugInfo.map((msg, idx) => (
+              <div key={idx} style={{ 
+                marginBottom: '4px', 
+                wordBreak: 'break-all',
+                borderLeft: '2px solid #0f0',
+                paddingLeft: '6px',
+                fontSize: '10px'
+              }}>
+                {msg}
+              </div>
+            ))
+          )}
+          <div style={{ fontSize: '9px', color: '#888', marginTop: '8px', borderTop: '1px solid #333', paddingTop: '4px' }}>
+            This panel only shows in development mode
+          </div>
+        </div>
+      )}
+
       <div className={styles.bgElements}>
         <div className={styles.goldParticles} />
         <div className={styles.glowOrb1} />
