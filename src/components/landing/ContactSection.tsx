@@ -113,16 +113,18 @@ export default function ContactSection() {
     setSubmitStatus({ type: null, message: '' });
     
     try {
-      const formDataObj = new FormData();
-      formDataObj.append("form-name", "consultation");
-      formDataObj.append("name", formData.name);
-      formDataObj.append("email", formData.email);
-      formDataObj.append("phone", formData.phone);
-      formDataObj.append("message", formData.message);
-      
-      const response = await fetch("/", {
+      const response = await fetch("/api/checkout/send-email", {
         method: "POST",
-        body: formDataObj,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+          subject: `New Consultation Request from ${formData.name}`,
+        }),
       });
 
       if (response.ok) {
@@ -132,7 +134,12 @@ export default function ContactSection() {
         });
         setFormData({ name: '', email: '', phone: '', message: '' });
       } else {
-        throw new Error('Form submission failed');
+        const errorBody = await response.json().catch(() => null);
+        const message =
+          typeof errorBody?.error === "string"
+            ? errorBody.error
+            : "Form submission failed";
+        throw new Error(message);
       }
     } catch (error) {
       console.error("Form submission error:", error);
@@ -174,7 +181,7 @@ export default function ContactSection() {
             <span className={styles.eyebrowLine}></span>
           </div>
           <h2 className={styles.title}>
-            Let's Begin Your 
+            Let&apos;s Begin Your 
             <span className={styles.goldText}> Luxury Journey</span>
           </h2>
           <p className={styles.subtitle}>
