@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import styles from "./css/Navbar.module.css";
+import { getImageUrl } from "@/utils/cloudinary";
 
 // Import contact data
 import contactData from "@/data/contactData.json";
@@ -41,13 +42,13 @@ export default function Navbar() {
           <div className={styles.logoWrap}>
             {!logoError ? (
               <Image
-                src="/logo.png"
-                alt={`${contactData.brand.name} logo`}
-                width={44}
-                height={44}
-                className={styles.logo}
-                onError={() => setLogoError(true)}
-              />
+  src={getImageUrl("v1777380043/logo_xlwrhp.png")} // ✅ REPLACED
+  alt={`${contactData.brand.name} logo`}
+  width={44}
+  height={44}
+  className={styles.logo}
+  onError={() => setLogoError(true)}
+/>
             ) : (
               <div className={styles.fallbackIcon}>💎</div>
             )}
