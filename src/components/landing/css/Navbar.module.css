@@ -235,3 +235,106 @@
 
 
 
+/* Auth Wrapper */
+.authWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 1rem;
+}
+
+/* Login Button */
+.loginButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a2b17;
+  background-color: transparent;
+  border: 1px solid #d8bd8a;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.loginButton:hover {
+  background-color: #fff4d8;
+  border-color: #c4a26a;
+}
+
+/* Sign Up Button */
+.signupButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background-color: #9F2B68;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.signupButton:hover {
+  background-color: #7a1f4f;
+  transform: translateY(-1px);
+}
+
+/* User Name Text */
+.userNameText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a2b17;
+  padding: 0.5rem 0;
+}
+
+/* Logout Button */
+.logoutButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #dc2626;
+  background-color: transparent;
+  border: 1px solid #fecaca;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logoutButton:hover {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+}
+
+/* Mobile Buttons */
+.mobileLoginButton,
+.mobileSignupButton,
+.mobileLogoutButton {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #f0e6d8;
+  cursor: pointer;
+}
+
+.mobileLoginButton {
+  color: #4a2b17;
+}
+
+.mobileSignupButton {
+  color: #9F2B68;
+  font-weight: 600;
+}
+
+.mobileLogoutButton {
+  color: #dc2626;
+  border-bottom: none;
+}
+
+.mobileLogoutButton:hover {
+  background-color: #fee2e2;
+}

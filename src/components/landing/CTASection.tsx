@@ -54,7 +54,7 @@ export default function CTASection() {
             <div className={styles.titleAccent} />
             
             <p className={styles.description}>
-              Discover timeless elegance crafted for life's most precious moments. 
+              Discover timeless elegance crafted for life&apos;s most precious moments. 
               From engagements to anniversaries, find the perfect piece that tells your story.
             </p>
             

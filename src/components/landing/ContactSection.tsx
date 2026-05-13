@@ -302,7 +302,7 @@ export default function ContactSection() {
             <span className={styles.eyebrowLine}></span>
           </div>
           <h2 className={styles.title}>
-            Let's Begin Your 
+            Let&apos;s Begin Your 
             <span className={styles.goldText}> Luxury Journey</span>
           </h2>
           <p className={styles.subtitle}>

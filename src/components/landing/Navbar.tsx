@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./css/Navbar.module.css";
 import { getImageUrl } from "@/utils/cloudinary";
@@ -18,9 +19,29 @@ const menuItems = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  // Check login status on mount
+  useEffect(() => {
+    fetch("/api/auth/check")
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data.isAuthenticated) {
+          setIsLoggedIn(false);
+          return;
+        }
+
+        const email = data.email ?? localStorage.getItem("customerEmail");
+        setIsLoggedIn(true);
+        setUserName(email ? email.split("@")[0] : "User");
+      })
+      .catch(() => setIsLoggedIn(false));
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,6 +54,23 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleLogout = async () => {
+    await fetch("/api/logout", { method: "POST" }).catch(() => null);
+    localStorage.removeItem("customerAccessToken");
+    localStorage.removeItem("customerEmail");
+    localStorage.removeItem("loginMethod");
+    setIsLoggedIn(false);
+    router.push("/landing");
+  };
+
+  const handleLogin = () => {
+    router.push("/login");
+  };
+
+  const handleSignup = () => {
+    router.push("/signup");
+  };
+
   return (
     <header
       className={`${styles.navbar} ${isScrolled ? styles.navbarScrolled : ""}`}
@@ -42,13 +80,13 @@ export default function Navbar() {
           <div className={styles.logoWrap}>
             {!logoError ? (
               <Image
-  src={getImageUrl("v1777380043/logo_xlwrhp.png")} // ✅ REPLACED
-  alt={`${contactData.brand.name} logo`}
-  width={44}
-  height={44}
-  className={styles.logo}
-  onError={() => setLogoError(true)}
-/>
+                src={getImageUrl("v1777380043/logo_xlwrhp.png")}
+                alt={`${contactData.brand.name} logo`}
+                width={44}
+                height={44}
+                className={styles.logo}
+                onError={() => setLogoError(true)}
+              />
             ) : (
               <div className={styles.fallbackIcon}>💎</div>
             )}
@@ -74,6 +112,26 @@ export default function Navbar() {
           <a href="#contact" className={styles.primaryAction}>
             Book Appointment
           </a>
+
+          {/* ✅ Auth Buttons - Simple Version */}
+          {isLoggedIn ? (
+            <div className={styles.authWrapper}>
+              <span className={styles.userNameText}>👋 {userName}</span>
+              <button onClick={handleLogout} className={styles.logoutButton}>
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className={styles.authWrapper}>
+              <button onClick={handleLogin} className={styles.loginButton}>
+                Login
+              </button>
+              <button onClick={handleSignup} className={styles.signupButton}>
+                Sign Up
+              </button>
+            </div>
+          )}
+
           <button
             type="button"
             className={`${styles.mobileToggle} ${
@@ -105,13 +163,40 @@ export default function Navbar() {
             {item.label}
           </a>
         ))}
-        <a
-          href="#contact"
-          className={styles.mobileAction}
-          onClick={() => setIsMenuOpen(false)}
-        >
-          Book Appointment
-        </a>
+        
+        {/* ✅ Mobile Auth Options */}
+        {isLoggedIn ? (
+          <button
+            onClick={() => {
+              handleLogout();
+              setIsMenuOpen(false);
+            }}
+            className={styles.mobileLogoutButton}
+          >
+            🚪 Logout
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => {
+                handleLogin();
+                setIsMenuOpen(false);
+              }}
+              className={styles.mobileLoginButton}
+            >
+              Login
+            </button>
+            <button
+              onClick={() => {
+                handleSignup();
+                setIsMenuOpen(false);
+              }}
+              className={styles.mobileSignupButton}
+            >
+              Create Account
+            </button>
+          </>
+        )}
       </div>
     </header>
   );

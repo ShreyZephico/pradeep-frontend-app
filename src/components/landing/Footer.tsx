@@ -1,20 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
 import styles from "./css/Footer.module.css";
 
 // Import contact data
 import contactData from "@/data/contactData.json";
 
 export default function Footer() {
-  const [currentYear, setCurrentYear] = useState(2024);
-  const [logoError, setLogoError] = useState(false);
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
-
+  const currentYear = new Date().getFullYear();
   const footerData = contactData.footer;
   const socialLinks = [
     { name: "Instagram", icon: "📷", url: contactData.social.instagram },
@@ -45,7 +37,6 @@ export default function Footer() {
     style={{ maxWidth: '180px', height: 'auto' }}
     onError={(e) => {
       e.currentTarget.style.display = 'none';
-      setLogoError(true);
     }}
   />
 </div>

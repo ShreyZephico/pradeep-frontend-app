@@ -93,52 +93,70 @@ function ProductModalContent({ product, onClose }: ProductModalContentProps) {
   const selectedImage = selectedVariant?.image ?? product.image;
 
   const handleCheckout = async () => {
-    if (!selectedVariantId) {
-      setCheckoutError("Add this product in Shopify before taking payment.");
+  if (!selectedVariantId) {
+    setCheckoutError("Please select all customization options before proceeding.");
+    return;
+  }
+
+  setCheckoutError("");
+  setIsCheckingOut(true);
+
+  try {
+    const attributes = [];
+    
+    if (selectedMetal) {
+      attributes.push({ key: "Metal", value: selectedMetal });
+    }
+    if (selectedCarat) {
+      attributes.push({ key: "Carat", value: selectedCarat });
+    }
+    if (selectedQuality) {
+      attributes.push({ key: "Diamond Quality", value: selectedQuality });
+    }
+    if (selectedSize) {
+      attributes.push({ key: "Ring Size", value: selectedSize });
+    }
+    
+    attributes.push({ key: "Design", value: product.name });
+    attributes.push({ key: "Estimated Custom Price", value: formatPrice(estimatedPrice) });
+
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        variantId: selectedVariantId,
+        attributes,
+        productName: product.name,
+        customPrice: estimatedPrice,
+        useDraftOrder: product.customizable,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.status === 401) {
+      // User not logged in, save current URL and redirect to login
+      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      window.location.href = '/login';
       return;
     }
 
-    setCheckoutError("");
-    setIsCheckingOut(true);
-
-    try {
-      const attributes = product.customizable
-        ? [
-            { key: "Metal", value: selectedMetal },
-            { key: "Carat", value: selectedCarat },
-            { key: "Diamond Quality", value: selectedQuality },
-            { key: "Ring Size", value: selectedSize },
-            { key: "Design", value: product.name },
-            { key: "Estimated Custom Price", value: formatPrice(estimatedPrice) },
-          ]
-        : [];
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          variantId: selectedVariantId,
-          attributes,
-          productName: product.name,
-          customPrice: estimatedPrice,
-          useDraftOrder: product.customizable,
-        }),
-      });
-      const data = await response.json();
-
-      if (!response.ok || !data.checkoutUrl) {
-        throw new Error(data.error ?? "Unable to start checkout.");
-      }
-
-      window.location.href = data.checkoutUrl;
-    } catch (error) {
-      setCheckoutError(
-        error instanceof Error ? error.message : "Unable to start checkout."
-      );
-      setIsCheckingOut(false);
+    if (!response.ok || !data.checkoutUrl) {
+      throw new Error(data.error ?? "Unable to start checkout.");
     }
-  };
+
+    // Redirect to Shopify checkout
+    window.location.href = data.checkoutUrl;
+    
+  } catch (error) {
+    setCheckoutError(
+      error instanceof Error ? error.message : "Unable to start checkout. Please try again."
+    );
+    setIsCheckingOut(false);
+  }
+};
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2f1c12]/60 px-4 py-6 backdrop-blur-sm">

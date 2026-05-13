@@ -3,21 +3,11 @@
 import { useEffect, useState, useRef } from "react";
 import styles from "./css/HeroSection.module.css";
 
-const highlights = [
-  "Certified stones and artisan finishing",
-  "Complimentary gift-ready packaging",
-  "Personalized consultations for custom pieces",
-];
-
 export default function HeroSection() {
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    setIsLoaded(true);
-    
-    // Auto-play video when loaded
     if (videoRef.current) {
       videoRef.current.play().catch(error => {
         console.log("Video autoplay failed:", error);
@@ -50,7 +40,7 @@ export default function HeroSection() {
       <div className={styles.orb2} />
       <div className={styles.orb3} />
 
-      <div className={`${styles.container} ${isLoaded ? styles.loaded : ""}`}>
+      <div className={`${styles.container} ${styles.loaded}`}>
         <div className={styles.content}>
           
           
